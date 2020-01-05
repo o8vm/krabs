@@ -55,7 +55,7 @@ fn check_a20() -> Result<(), ()> {
 pub fn enable_a20() {
     let data: u8;
     if check_a20().is_ok() {
-        println!("  A20 line is already activate.");
+        println!("  A20 line is already activated.");
         return;
     }
     // Classical AT type
