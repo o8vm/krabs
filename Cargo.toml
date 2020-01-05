@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "src/stage_1st",
+    "src/stage_2nd",
+    "src/stage_3rd",
+    "src/plankton",
+    "src/stage_32",
+]
+exclude = ["eg-kernel"]
+
+[profile.release]
+opt-level = "z"
