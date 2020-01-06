@@ -1,6 +1,6 @@
-# Krabs: x86 bootloader 
+# Krabs: x86 bootloader
 Krabs is an experimental x86 bootloader written in Rust.  
-Krabs can load and start the ELF format kernel compressed with bzip2.
+Krabs can boot the ELF formatted kernel which compressed with bzip2. Krabs decompresses the bz2 image and relocate the ELF image, then boot the kernel.
 
 Some of the source code uses libbzip2 C library for decompressing, but the rest is completely Rust only.
 
@@ -23,6 +23,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install cargo-xbuild 
 cargo install cargo-binutils
 rustup component add llvm-tools-preview
+rustup component add rust-src
 ```
 
 For testing, you also need the qemu and MBR disk image.  
@@ -81,10 +82,12 @@ qemu-system-i386 disk.img -boot c
 Build and launch a simple kernel that only displays Hello world.
 
 ```shell
-cd eg-kernel
-cargo xbuild --release
-cd ..
-./tools/build.sh -k eg-kernel/target/i586-example_os/release/eg-kernel eg-kernel/test.img 
+$ pwd
+path/to/krabs
+$ cd eg-kernel
+$ cargo xbuild --release
+$ cd ..
+$ ./tools/build.sh -k eg-kernel/target/i586-example_os/release/eg-kernel eg-kernel/test.img 
 qemu-system-i386 eg-kernel/test.img -boot c
 ```
 
@@ -117,13 +120,13 @@ In this project, the following four types of initialization processing are perfo
 
 ### Structure and Overview
 1. stage1  
-A 446 byte program written to the boot sector. The segment registers (CS, DS, ES, SS) are set to 0x0700, and the stack pointer (ESP) is initialized to 0xFFF0. After that, stage2 is loaded to address 0x07C0: 0x0200, and jumps to address 0x07C0:0x0280. In the latter half of stage1, there is an area for storing the sector length (in units of 512 bytes) of the stage2 program.
+A 446 byte program written to the boot sector. The segment registers (CS, DS, ES, SS) are set to 0x07C0, and the stack pointer (ESP) is initialized to 0xFFF0. After that, stage2 is loaded to address 0x07C0:0x0200, and jumps to address 0x07C0:0x0280. In the latter half of stage1, there is an area for storing the sector length (in units of 512 bytes) of the stage2 program.
 2. stage2  
 The stage3 program is loaded at address 0x07C0:0x6000, the compressed kernel image is loaded at address 0x380000 in the extended memory area, and the initrd file is loaded at 0x500000. The file is read from the disk using a 4K byte track buffer from address 0x07C0:0xEE00, and further transferred to an appropriate address using INT 15h BIOS Function 0x87h. When the loading of stage3, initrd and compressed kernel image is completed, jump to address 0x07C0:0x6000.
 The kernel command line is held in the area of 122 bytes from address 0x280.
 3. stage3  
 Stage3 is linked with the libbzip2 decompression routine. Since an external C library is used, it is necessary to support zero clear of the .bss section. After a series of hardware and software initialization, empty_zero_page information is prepared in 0x07C0:0x0000 to 0x07C0:0x0FFF together with the information written in stage2. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. The decompression function is called, the bzip2 compressed ELF kernel image is restored to the extended memory address 0x100000 or later, and then the ELF file is parsed and loaded. Finally, jump to the entry point to launch the kernel. At this time, it is necessary to set the physical address (0x00007C00) of the empty_zero_page information prepared in the low-order memory in the ESI register.
-4. plankton  
+4. plankton🦠  
 library common to stage1 ~ stage3.
 
 ### Disk Space Layout
