@@ -104,6 +104,9 @@ pushd ./src/stage_2nd
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_2nd/release/stage_2nd ../../target/i586-stage_2nd/release/stage_2nd.bin
     dd if=../../target/i586-stage_2nd/release/stage_2nd.bin of="../../${DISKIMAGE}" bs=512 seek=1 conv=notrunc
+    STAGE2SIZE="$(cat ../../target/i586-stage_2nd/release/stage_2nd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
+    BINSTAGE2S="$(printf %04X ${STAGE2SIZE} | sed 's/\([0-9]\{2\}\)\([0-9]\{2\}\)/\\x\2\\x\1/')"
+    printf "${BINSTAGE2S}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x1bc)) count=2 conv=notrunc
 else
     popd
     error_exit 1 'stage_2nd build failed'

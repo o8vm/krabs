@@ -5,7 +5,7 @@ use plankton::{con::inform, dev::Dap};
 
 #[link_section=".size"]
 #[no_mangle]
-static STAGE2_SISE: u16 = 50;
+pub static mut STAGE2_SISE: u16 = 00;
 
 entry!(main);
 fn main() {
@@ -18,10 +18,11 @@ fn main() {
         Err(err) => { inform(err); return },
         Ok(_) => {},
     }
+    unsafe {
     match Dap::new(STAGE2_SISE, plankton::STAGE2_LOAD|(0x07C0<<16), 1)
         .hd_read(0x80) {
             Err(err) => {  inform(err); return },
-            Ok(_) => inform(b"stage2 loaded\r\n"),
-    }
+            Ok(_) => inform(b"load stage2"),
+    }}
     stage2();
 }
