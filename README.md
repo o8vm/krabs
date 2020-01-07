@@ -88,7 +88,7 @@ $ cd eg-kernel
 $ cargo xbuild --release
 $ cd ..
 $ ./tools/build.sh -k eg-kernel/target/i586-example_os/release/eg-kernel eg-kernel/test.img 
-qemu-system-i386 eg-kernel/test.img -boot c
+$ qemu-system-i386 eg-kernel/test.img -boot c
 ```
 
 screenshot:
@@ -97,6 +97,8 @@ screenshot:
 
 ## Contributing
 Krabs welcomes all contributions.
+
+To contribute to Krabs, check out the [getting started guide](#getting-started) and then the Krabs [contribution guidelines](CONTRIBUTING.md).
 
 ## Design
 The minimum requirement for booting an ELF-format OS kernel is that the ELF-format image file must be parsed and loaded to the address specified in the program header.
@@ -148,4 +150,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in Serde by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
+## Contanct
 
+You can get in touch with me in the following ways:
+
+* Contact me on my [twitter](https://twitter.com/ellbrid). _Note: I'm on a Japan time zone._
+* Open a GitHub issue in this repository.
+* Email me at [ell@exoskeleton.dev](mailto:ell@exoskeleton.dev).
+
+When communicating within the Krabs community, please mind our [code of conduct](CODE_OF_CONDUCT.md).
