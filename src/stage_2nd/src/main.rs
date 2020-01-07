@@ -31,7 +31,7 @@ fn stage2() {
     let mbr = 0x000usize as *const DiskRecord;
     let mbr: &DiskRecord = unsafe { &*mbr };
 
-    print!("Stage2: ");
+    print!("\r\nStage2: ");
     println!("stage3_size = {:04X} : \
               kernel_size = {:04X} : \
               initrd_size = {:04X}", 
