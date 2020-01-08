@@ -17,10 +17,10 @@ macro_rules! entry {
 
             f()
         }
-    }
+    };
 }
 
-#[link_section=".startup"]
+#[link_section = ".startup"]
 #[no_mangle]
 fn _start() -> ! {
     extern "Rust" {
@@ -36,8 +36,8 @@ fn _start() -> ! {
               movw %ax, %ss
               movl $$0xFFF0, %esp
               sti"
-             :::
-            );
+         :::
+        );
         main();
     }
     loop {}

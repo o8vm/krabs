@@ -1,4 +1,4 @@
-use plankton::{INITRD_START, KERNEL_SIZE, mem::MemoryRegion};
+use plankton::{mem::MemoryRegion, INITRD_START, KERNEL_SIZE};
 
 pub fn set_image(kernel_size: u32, initrd_size: u32) {
     let zero_page = MemoryRegion::new(0x000, 4096);

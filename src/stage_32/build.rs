@@ -1,4 +1,4 @@
-fn main() {    
+fn main() {
     cc::Build::new()
         .flag("-m32")
         .flag("--target=i586-unknown-none")

@@ -7,10 +7,10 @@ pub fn inform(s: &[u8]) {
 fn printc(ch: u8) {
     unsafe {
         asm!("int $$0x10"
-             :
-             : "{ax}"(0x0e00 | (ch as u16 & 0xffu16)),
-               "{ebx}"(7)
-            );
+         :
+         : "{ax}"(0x0e00 | (ch as u16 & 0xffu16)),
+           "{ebx}"(7)
+        );
     }
 }
 
@@ -35,7 +35,6 @@ macro_rules! println {
 pub fn _print(args: fmt::Arguments) {
     let mut writer = BiosWriter {};
     writer.write_fmt(args).unwrap();
-
 }
 
 struct BiosWriter;

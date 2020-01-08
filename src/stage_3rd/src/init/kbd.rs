@@ -4,13 +4,13 @@ pub fn set_keyboard() {
     let ret: u8;
     unsafe {
         asm!("int $$0x16"
-             : "={al}"(ret)
-             : "{ax}"(0x0200)
-            );
+         : "={al}"(ret)
+         : "{ax}"(0x0200)
+        );
         asm!("int $$0x16"
-            :
-            : "{ax}"(0x0305), "{ebx}"(0)
-            );
+        :
+        : "{ax}"(0x0305), "{ebx}"(0)
+        );
     }
     zero_page.write_u8(0x1eb, ret);
 }

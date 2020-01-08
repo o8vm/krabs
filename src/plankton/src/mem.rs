@@ -1,15 +1,15 @@
 pub fn copy_block(src: u32, dst: u32, wcount: u16) -> Result<(), &'static str> {
     let ret: u16;
     let mut gdt: [u64; 6] = [0; 6];
-    gdt[2] = 0x9200<<32 | (src as u64 & 0x00FFFFFF) << 16 | 0xFFFF;
-    gdt[3] = 0x9200<<32 | (dst as u64 & 0x00FFFFFF) << 16 | 0xFFFF;
+    gdt[2] = 0x9200 << 32 | (src as u64 & 0x00FFFFFF) << 16 | 0xFFFF;
+    gdt[3] = 0x9200 << 32 | (dst as u64 & 0x00FFFFFF) << 16 | 0xFFFF;
     unsafe {
         asm!("int $$0x15"
-             : "={ax}"(ret)
-             : "{ax}"(0x8700), 
-               "{cx}"(wcount),
-               "{si}"(&gdt as *const [u64;6])
-            );
+         : "={ax}"(ret)
+         : "{ax}"(0x8700),
+           "{cx}"(wcount),
+           "{si}"(&gdt as *const [u64;6])
+        );
     }
     if ret & 0xff00 != 0 {
         Err("Memory transfer error!")
@@ -70,7 +70,7 @@ impl MemoryRegion {
     pub fn write<T>(&self, offset: u64, value: T) {
         assert!((offset + (core::mem::size_of::<T>() - 1) as u64) < self.length);
         unsafe {
-            *((self.base + offset) as *mut T) = value;            
+            *((self.base + offset) as *mut T) = value;
         }
     }
 

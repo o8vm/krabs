@@ -3,7 +3,7 @@ use plankton::mem::MemoryRegion;
 pub fn clear_bss() {
     use core::ptr;
     extern "C" {
-        static mut _data_end : u8;
+        static mut _data_end: u8;
         static mut _bss_end: u8;
     }
     unsafe {
@@ -25,12 +25,12 @@ impl Pages {
                 for elem in zero_page.as_mut_slice::<u8>(0x000, 0x800).iter_mut() {
                     *elem = 0;
                 }
-            },
+            }
             Self::SecondHalf => {
                 for elem in zero_page.as_mut_slice::<u8>(0x800, 0x800).iter_mut() {
                     *elem = 0;
                 }
-            },
+            }
         }
     }
 }

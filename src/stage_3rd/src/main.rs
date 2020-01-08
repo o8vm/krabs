@@ -2,9 +2,9 @@
 #![no_main]
 
 use plankton::{print, println};
-use stage_3rd::{setup, move_to_protect};
+use stage_3rd::{move_to_protect, setup};
 
-#[link_section=".fisrt"]
+#[link_section = ".fisrt"]
 #[no_mangle]
 extern "C" fn stage3(kernel_size: u16, inird_size: u16, cmd_line: &[u8]) -> ! {
     println!("Stage3:");
@@ -18,4 +18,3 @@ extern "C" fn stage3(kernel_size: u16, inird_size: u16, cmd_line: &[u8]) -> ! {
     }
     loop {}
 }
-

@@ -1,14 +1,15 @@
-use plankton::{print, println};
 use plankton::ios::{inb, io_delay, outb};
+use plankton::{print, println};
 
 fn flush_8042() {
     let mut stat: u8;
-    
+
     loop {
         io_delay();
         stat = inb(0x64);
         if stat & 0x01 != 0 {
-            io_delay(); inb(0x60);
+            io_delay();
+            inb(0x60);
             continue;
         }
         if stat & 0x02 != 0 {
@@ -40,10 +41,10 @@ fn check_a20() -> Result<(), ()> {
               xorl %ebx, %ebx
              1:
               movl %ebx, %eax"
-             : "={eax}"(ret)
-             :
-             : "eax" "ebx" "edx"
-            );
+         : "={eax}"(ret)
+         :
+         : "eax" "ebx" "edx"
+        );
     }
     if ret != 0 {
         Ok(())
