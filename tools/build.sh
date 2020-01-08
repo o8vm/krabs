@@ -57,7 +57,7 @@ do
             INITRDSIZE="$(cat ${INITRDFILE} | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
             BININITRDS="$(printf %04X ${INITRDSIZE} | sed 's/\([0-9]\{2\}\)\([0-9]\{2\}\)/\\x\2\\x\1/')"
             ;;
-        c)  COMANDLINE="${OPTARG}" # 122文字以下でなければerror_exitするように変更
+        c)  COMANDLINE="${OPTARG}"
             if [ "${#COMANDLINE}" -gt 122 ]; then
                 error_exit 1 'cmdline is too long. it should be under 122 bytes.'
             fi
@@ -87,7 +87,7 @@ if [ -z "${BOOTPART:-}" ]; then
     error_exit 1 "There is no boot partition in ${DISKIMAGE}"
 fi
 
-
+{
 printf "== Writing stage_1st into boot sector. ==\n"
 pushd ./src/stage_1st
 if cargo xbuild --release; then
@@ -96,7 +96,7 @@ if cargo xbuild --release; then
 else
     popd
     error_exit 1 'stage_1st build failed'
-fi 2>&1 | grep -v 'the table of contents is empty'
+fi 2>&1
 popd
 
 printf "\n== Writing stage_2nd into Disk image. ==\n"
@@ -110,7 +110,7 @@ if cargo xbuild --release; then
 else
     popd
     error_exit 1 'stage_2nd build failed'
-fi 2>&1 | grep -v 'the table of contents is empty'
+fi 2>&1
 popd
 
 printf "\n== Building 16bit part of stage_3. ==\n"
@@ -120,7 +120,7 @@ if cargo xbuild --release; then
 else
     popd
     error_exit 1 'stage_3rd build failed'
-fi 2>&1 | grep -v 'the table of contents is empty'
+fi 2>&1
 popd
 
 printf "\n== Building 32bit part of stage_3. ==\n"
@@ -130,7 +130,7 @@ if cargo xbuild --release; then
 else
     popd
     error_exit 1 'stage_32 build failed'
-fi 2>&1 | grep -v 'the table of contents is empty'
+fi 2>&1
 popd
 
 # link stage3 and writing into DISKIMAGE
@@ -159,5 +159,6 @@ if [ -n "${COMANDLINE:-}" ]; then
     printf "\n== Writing kernel cmdline into boot param table. ==\n"
     printf "${COMANDLINE}" | cut -c 1-122 | dd of="${DISKIMAGE}" bs=1 seek=$((0x200)) count="${#COMANDLINE}" conv=notrunc 
 fi
+} | grep -Ev '(the table of contents is empty|is valid for Java but not for C)'
 
 rm "${BZKERNFILE}"
