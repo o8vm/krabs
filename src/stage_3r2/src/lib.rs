@@ -1,49 +1,20 @@
 #![no_std]
-
+pub mod elf;
 use plankton::{mem::MemoryRegion, ELF_START};
 
-#[derive(Copy, Clone)]
-#[repr(C, packed)]
-pub struct ElfHeader {
-    pub e_ident: [u8; 16],
-    pub e_type: u16,
-    pub e_cpu: u16,
-    pub e_version: u32,
-    pub e_entry: u32,
-    pub e_phoff: u32,
-    pub e_shoff: u32,
-    pub e_flags: u32,
-    pub e_ehsize: u16,
-    pub e_phsize: u16,
-    pub e_phnum: u16,
-    pub e_shsize: u16,
-    pub e_shnum: u16,
-    pub e_shname: u16,
-}
-
-#[derive(Copy, Clone)]
-#[repr(C, packed)]
-pub struct ProgramHeader {
-    pub p_type: u32,
-    pub p_offset: u32,
-    pub p_vaddr: u32,
-    pub p_paddr: u32,
-    pub p_fsize: u32,
-    pub p_msize: u32,
-    pub p_flags: u32,
-    pub p_align: u32,
-}
-
 pub fn load_elf(kernel_size: u32) -> u32 {
-    let elf = MemoryRegion::new(ELF_START as u64, (kernel_size * 512) as u64);
-    let ehdr: ElfHeader = elf.read::<ElfHeader>(0);
-    let phdrs = elf.as_slice::<ProgramHeader>(ehdr.e_phoff as u64, ehdr.e_phnum as u64);
+    let elf_image = MemoryRegion::new(ELF_START as u64, (kernel_size * 512) as u64);
+    let e_ident: &[u8] = elf_image.as_slice(0, 16);
+
+    let ehdr = elf_image.read::<elf::Elf32Header>(0);
+    let phdrs =
+        elf_image.as_slice::<elf::Elf32ProgramHeader>(ehdr.e_phoff as u64, ehdr.e_phnum as u64);
     for &phdr in phdrs.iter() {
         match phdr.p_type {
             1 => {
                 let mut dst_region = MemoryRegion::new(phdr.p_paddr as u64, phdr.p_fsize as u64);
                 let dst = dst_region.as_mut_slice::<u8>(0, phdr.p_fsize as u64);
-                let src = elf.as_slice::<u8>(phdr.p_offset as u64, phdr.p_fsize as u64);
+                let src = elf_image.as_slice::<u8>(phdr.p_offset as u64, phdr.p_fsize as u64);
                 dst.copy_from_slice(src);
             }
             _ => {}
