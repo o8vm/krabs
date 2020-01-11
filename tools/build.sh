@@ -105,7 +105,7 @@ if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_2nd/release/stage_2nd ../../target/i586-stage_2nd/release/stage_2nd.bin
     dd if=../../target/i586-stage_2nd/release/stage_2nd.bin of="../../${DISKIMAGE}" bs=512 seek=1 conv=notrunc
     STAGE2SIZE="$(cat ../../target/i586-stage_2nd/release/stage_2nd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-    BINSTAGE2S="$(printf %04X ${STAGE2SIZE} | sed 's/\([0-9]\{2\}\)\([0-9]\{2\}\)/\\x\2\\x\1/')"
+    BINSTAGE2S="$(printf %04X ${STAGE2SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
     printf "${BINSTAGE2S}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x1bc)) count=2 conv=notrunc
 else
     popd
@@ -114,51 +114,52 @@ fi 2>&1
 popd
 
 printf "\n== Building 16bit part of stage_3. ==\n"
-pushd ./src/stage_3rd
+pushd ./src/stage_3r1
 if cargo xbuild --release; then
-    cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_3rd/release/stage_3rd ../../target/i586-stage_3rd/release/stage_3rd.bin
+    cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_3r1/release/stage_3r1 ../../target/i586-stage_3r1/release/stage_3r1.bin
+    dd if=../../target/i586-stage_3r1/release/stage_3r1.bin of="../../${DISKIMAGE}" bs=512 seek="${BOOTPART}" conv=notrunc 
+    STAGE31SIZ="$(cat ../../target/i586-stage_3r1/release/stage_3r1.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
+    BINSTAGE31="$(printf %04X ${STAGE31SIZ} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
+    printf "${BINSTAGE31}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x278)) count=2 conv=notrunc
 else
     popd
     error_exit 1 'stage_3rd build failed'
 fi 2>&1
 popd
 
+
 printf "\n== Building 32bit part of stage_3. ==\n"
-pushd ./src/stage_32
+pushd ./src/stage_3r2
 if cargo xbuild --release; then
-    cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_32b/release/stage_32 ../../target/i586-stage_32b/release/stage_32.bin
+    cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_3r2/release/stage_3r2 ../../target/i586-stage_3r2/release/stage_3r2.bin
+    dd if=../../target/i586-stage_3r2/release/stage_3r2.bin of="../../${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE31SIZ}))" conv=notrunc 
+    STAGE32SIZ="$(cat ../../target/i586-stage_3r2/release/stage_3r2.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
+    BINSTAGE32="$(printf %04X ${STAGE32SIZ} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
+    printf "${BINSTAGE32}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x27a)) count=2 conv=notrunc
 else
     popd
     error_exit 1 'stage_32 build failed'
 fi 2>&1
 popd
 
-# link stage3 and writing into DISKIMAGE
-printf "\n== Linking & Writing stage_3 into Disk image. ==\n"
-cat target/i586-stage_3rd/release/stage_3rd.bin target/i586-stage_32b/release/stage_32.bin > target/i586-stage_32b/release/stage3.bin
-dd if=target/i586-stage_32b/release/stage3.bin of="${DISKIMAGE}" bs=512 seek="${BOOTPART}" conv=notrunc 
-STAGE3SIZE="$(cat target/i586-stage_32b/release/stage3.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-BINSTAGE3S="$(printf %04X ${STAGE3SIZE} | sed 's/\([0-9]\{2\}\)\([0-9]\{2\}\)/\\x\2\\x\1/')"
-printf "${BINSTAGE3S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x27a)) count=2 conv=notrunc
-
 # Writing kenrel and initrd, if exists.
 if [ -n "${BZKERNFILE:-}" ]; then
     printf "\n== Writing kernel into boot partition. ==\n"
-    dd if="${BZKERNFILE}" of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE3SIZE}))" conv=notrunc 
+    dd if="${BZKERNFILE}" of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE31SIZ}+${STAGE32SIZ}))" conv=notrunc 
     printf "${BINBZKERNS}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x27c)) count=2 conv=notrunc
+    rm "${BZKERNFILE}"
 fi
 
 if [ -n "${INITRDFILE:-}" ]; then
     printf "\n== Writing initrd into boot partition. ==\n"
-    dd if="${INITRDFILE}" of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE3SIZE}+${BZKERNSIZE}))" conv=notrunc 
+    dd if="${INITRDFILE}" of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE31SIZ}+${STAGE32SIZ}+${BZKERNSIZE}))" conv=notrunc 
     printf "${BININITRDS}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x27e)) count=2 conv=notrunc  
 fi
 
 # Writing command line, if exists.
 if [ -n "${COMANDLINE:-}" ]; then
     printf "\n== Writing kernel cmdline into boot param table. ==\n"
-    printf "${COMANDLINE}" | cut -c 1-122 | dd of="${DISKIMAGE}" bs=1 seek=$((0x200)) count="${#COMANDLINE}" conv=notrunc 
+    printf "${COMANDLINE}" | cut -c 1-120 | dd of="${DISKIMAGE}" bs=1 seek=$((0x200)) count="${#COMANDLINE}" conv=notrunc 
 fi
 } | grep -Ev '(the table of contents is empty|is valid for Java but not for C)'
 
-rm "${BZKERNFILE}"

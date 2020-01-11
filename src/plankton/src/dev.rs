@@ -1,5 +1,5 @@
 use super::mem::copy_block;
-use super::{IMAGE_START, INITRD_START, INIT_SEG, STAGE3_START, TRACK_BUFFER};
+use super::{IMAGE_START, INITRD_START, INIT_SEG, STAGE31_START, STAGE32_START, TRACK_BUFFER};
 use core::str;
 
 #[derive(Default)]
@@ -83,7 +83,7 @@ pub struct DiskRecord {
 
 impl DiskRecord {
     const MAX_RECORD: u16 = 33;
-    const MAX_SECTOR: u16 = 8; // 18
+    const MAX_SECTOR: u16 = 32;
     const SECTOR_SIZE: u16 = 512;
 
     pub fn get_lba(&self) -> Result<u32, &'static str> {
@@ -168,33 +168,41 @@ impl DiskRecord {
             image_size -= load_sectors;
             start_lba += load_sectors as u32;
         }
-        println!(".");
         Ok(())
     }
 
     pub fn load_images(
         &self,
-        stage3_size: u16,
+        stage31_size: u16,
+        stage32_size: u16,
         kernel_size: u16,
         initrd_size: u16,
     ) -> Result<(), &'static str> {
         let mut slba = self.get_lba()?;
 
-        if stage3_size > 0 {
+        if stage31_size > 0 {
             print!("  Loading stage3 ");
-            Self::read_image(stage3_size, (INIT_SEG << 4) + STAGE3_START, slba)?;
+            Self::read_image(stage31_size, (INIT_SEG << 4) + STAGE31_START, slba)?;
+        }
+
+        if stage32_size > 0 {
+            slba += stage31_size as u32;
+            Self::read_image(stage32_size, STAGE32_START, slba)?;
+            println!("");
         }
 
         if kernel_size > 0 {
             print!("  Loading compressed kernel image ");
-            slba += stage3_size as u32;
+            slba += stage32_size as u32;
             Self::read_image(kernel_size, IMAGE_START, slba)?;
+            println!("");
         }
 
         if initrd_size > 0 {
             print!("  Loading initrd ");
             slba += kernel_size as u32;
             Self::read_image(initrd_size, INITRD_START, slba)?;
+            println!("");
         }
         Ok(())
     }

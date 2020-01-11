@@ -2,9 +2,9 @@
 members = [
     "src/stage_1st",
     "src/stage_2nd",
-    "src/stage_3rd",
+    "src/stage_3r1",
+    "src/stage_3r2",
     "src/plankton",
-    "src/stage_32",
 ]
 exclude = ["eg-kernel"]
 

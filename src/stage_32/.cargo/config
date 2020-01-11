@@ -1,3 +1,0 @@
-[build]
-target = "i586-stage_32b.json"
-rustflags = ["-C", "link-arg=-Tsrc/stage_32/stage_32b.ld"]

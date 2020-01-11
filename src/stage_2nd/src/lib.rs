@@ -9,8 +9,9 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[repr(C, packed)]
 pub struct ParamTable {
-    pub cmd_line: [u8; 122],
-    pub stage3_size: u16,
+    pub cmd_line: [u8; 120],
+    pub stage31_size: u16,
+    pub stage32_size: u16,
     pub kernel_size: u16,
     pub initrd_size: u16,
 }
