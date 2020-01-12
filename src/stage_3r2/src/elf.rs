@@ -13,11 +13,11 @@ pub const ELFMAG3: u8 = b'F';
 pub const ELF32CL: u8 = 1;
 pub const ELF64CL: u8 = 2;
 
-pub const ELFDATA2LSB: usize = 1;
+pub const ELFDATA2LSB: u8 = 1;
 
 pub const PT_LOAD: u32 = 1;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C, packed)]
 pub struct Elf32Header {
     pub e_ident: [u8; 16],
@@ -36,7 +36,7 @@ pub struct Elf32Header {
     pub e_shname: u16,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C, packed)]
 pub struct Elf32ProgramHeader {
     pub p_type: u32,
@@ -49,7 +49,7 @@ pub struct Elf32ProgramHeader {
     pub p_align: u32,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C, packed)]
 pub struct Elf64Header {
     pub e_ident: [u8; 16],
@@ -68,7 +68,7 @@ pub struct Elf64Header {
     pub e_shname: u16,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C, packed)]
 pub struct Elf64ProgramHeader {
     pub p_type: u32,
