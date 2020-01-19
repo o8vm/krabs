@@ -115,28 +115,3 @@ pub fn clear_bss() {
         ptr::write_bytes(&mut _data_end as *mut u8, 0, count);
     }
 }
-
-pub fn printc(data: u8) {
-    let vga_buffer = 0xb8000 as *mut u8;
-    static mut POS: isize = 0;
-    unsafe {
-        *vga_buffer.offset(POS as isize * 2) = data;
-        *vga_buffer.offset(POS as isize * 2 + 1) = 0xb;
-        POS += 1;
-    }
-}
-
-pub fn dump_byte(data: u8) {
-    let hex: [u8; 16] = *b"0123456789ABCDEF";
-    printc(hex[((data & 0xF0) >> 4) as usize]);
-    printc(hex[(data & 0x0F) as usize]);
-}
-
-pub fn dump_word(data: u16) {
-    dump_byte(((data & 0xFF00) >> 8) as u8);
-    dump_byte((data & 0xFF) as u8);
-}
-pub fn dump_quad(data: u32) {
-    dump_word(((data & 0xFFFF0000) >> 16) as u16);
-    dump_word((data & 0xFFFF) as u16);
-}
