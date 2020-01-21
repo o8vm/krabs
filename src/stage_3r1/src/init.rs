@@ -14,8 +14,8 @@ pub fn setup(kernel_size: u16, initrd_size: u16, cmd_line: &[u8]) {
     zero::Pages::SecondHalf.clear();
     msz::set_mem_size();
     kbd::set_keyboard();
-    vid::set_screen_info();
     ist::query_ist();
     img::set_image(kernel_size as u32 * 512, initrd_size as u32 * 512);
     a20::enable_a20();
+    vid::set_screen_info();
 }

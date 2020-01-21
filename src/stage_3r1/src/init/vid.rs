@@ -3,14 +3,16 @@ use plankton::mem::MemoryRegion;
 pub fn set_screen_info() {
     let zero_page = MemoryRegion::new(0x000, 4096);
 
-    let curs: u16;
+    let curs_y: u8;
+    // let curs_x: u8;
     unsafe {
         asm!("int $$0x10"
-         : "={dx}"(curs)
+         : "={dh}"(curs_y)//, "={dl}"(curs_x)
          : "{ax}"(0x0300), "{ebx}"(0)
         );
     }
-    zero_page.write_u16(0x000, curs);
+    zero_page.write_u8(0x01, curs_y);
+    // zero_page.write_u8(0x00, curs_x);
 
     let mode: u8;
     let page: u8;

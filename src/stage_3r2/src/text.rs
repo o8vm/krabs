@@ -164,6 +164,22 @@ impl Writer {
         }
     }
 
+    pub fn restore(&mut self) {
+        let zero_page = plankton::mem::MemoryRegion::new(0x7C00, 4096);
+        let xx = zero_page.read_u8(0x00);
+        let yy = zero_page.read_u8(0x01);
+        self.locate(xx as usize, yy as usize);
+    }
+
+    pub fn store(&self) {
+        let zero_page = plankton::mem::MemoryRegion::new(0x7C00, 4096);
+        let page = *(self.page);
+        let xx: u8 = self.scrn[page].x as u8;
+        let yy: u8 = self.scrn[page].y as u8;
+        zero_page.write_u8(0x00, xx);
+        zero_page.write_u8(0x01, yy);
+    }
+
     fn xfer_line(src: usize, dst: usize, len: usize) {
         let src = unsafe { core::slice::from_raw_parts(src as *mut u16, len) };
         let dst = unsafe { core::slice::from_raw_parts_mut(dst as *mut u16, len) };
@@ -265,7 +281,10 @@ impl fmt::Write for Writer {
 
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    Writer::new().write_fmt(args).unwrap();
+    let mut writer = Writer::new();
+    writer.restore();
+    writer.write_fmt(args).unwrap();
+    writer.store();
 }
 
 #[macro_export]
