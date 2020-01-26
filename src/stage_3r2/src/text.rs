@@ -164,7 +164,7 @@ impl Writer {
         }
     }
 
-    pub fn restore(&mut self) {
+    pub fn init(&mut self) {
         let zero_page = plankton::mem::MemoryRegion::new(0x7C00, 4096);
         let xx = zero_page.read_u8(0x00);
         let yy = zero_page.read_u8(0x01);
@@ -205,11 +205,11 @@ impl Writer {
         let h = self.scrn[*(self.page)].height;
         let w = self.scrn[*(self.page)].width;
         let mut dst = self.scrn[*(self.page)].buffer;
-        let mut src = dst + w;
+        let mut src = dst + w * 2;
         while cnt < h {
             Self::xfer_line(src, dst, w);
-            src += w;
-            dst += w;
+            src += w * 2;
+            dst += w * 2;
             cnt += 1;
         }
         Self::fill_line(dst, w, vram_data!(b' ', self.scrn[*(self.page)].attr));
@@ -282,7 +282,7 @@ impl fmt::Write for Writer {
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     let mut writer = Writer::new();
-    writer.restore();
+    writer.init();
     writer.write_fmt(args).unwrap();
     writer.store();
 }
