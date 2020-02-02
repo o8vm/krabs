@@ -5,12 +5,16 @@ Krabs can boot the ELF formatted kernel which compressed with bzip2. Krabs decom
 Some of the source code uses libbzip2 C library for decompressing, but the rest is completely Rust only.
 
 ## What is Krabs?
-Krabs is working on booting vmlinux and ELF kernels on legacy 32-bit PCs and is under the development.  
+Krabs is working on booting vmlinux and other kernels formatted in ELF on 32-bit/64-bit PCs and is under the development.  
 Krabs also aims to support only the minimal Linux boot protocol. This allows you to specify the kernel command line and manipulate the behavior of the kernel at boot time.
-Another feature is that in order to save space, the ELF format kernel is compressed using bzip2 before use and uses libbzip2 library for decompressing.  
-The MBR has a 446-byte bootstrap loader and partition table that Krabs can recognize. Krabs uses LBA to access a specific sector.
+Another feature is that in order to save space, the ELF format kernel is compressed using bzip2 before writing and uses libbzip2 library for decompressing.  
 
 Krabs unfortunately cannot run vmlinux yet. No testing has been done.
+
+## News
+* Krabs now supports long mode. You can boot the 64bit kernel formatted in ELF64. 
+* Krabs still supports ELF32 on 32bit PCs. 
+* It does not need to rebuild Krabs every time, because it can tell executable file format. Once Krabs is built, it supports both 32-bit and 64-bit.
 
 ## Getting Started
 To get started with Krabs, build it from source.
@@ -78,8 +82,10 @@ You can test it using QEMU:
 qemu-system-i386 disk.img -boot c
 ```
 
-### Example
+### Example 
 Build and launch a simple kernel that only displays Hello world.
+
+#### ELF32 example (protect mode)
 
 ```shell
 $ pwd
@@ -94,6 +100,22 @@ $ qemu-system-i386 eg-kernel/test.img -boot c
 screenshot:
 
 ![eg-kernel](docs/images/eg-kernel.png)
+
+#### ELF64 example (long mode)
+
+```shell
+$ pwd
+path/to/krabs
+$ cd eg-kernel64
+$ cargo xbuild --release
+$ cd ..
+$ ./tools/build.sh -k eg-kernel64/target/x64-example_os/release/eg-kernel eg-kernel/test.img 
+$ qemu-system-x86_64 eg-kernel/test.img -boot c
+```
+
+screenshot:
+
+![eg-kernel64](docs/images/eg-kernel64.png)
 
 ## Contributing
 Krabs welcomes all contributions.
@@ -110,6 +132,7 @@ In this project, the following four types of initialization processing are perfo
 * Setting Interrupt descriptor (IDT) and segment descriptor (GDT). As a result, all selectors (CS, DS, ES, FS, GS) refer to the 4 Gbyte flat linear address space.
 * Change the address bus to 32 bits (Enable A20 line).
 * Transition to protected mode.
+* If the target is ELF64, set the 4G boot pagetable and transition to long mode.
 
 **Software initialization:**
 * Get system memory by BIOS call.
@@ -127,9 +150,9 @@ A 446 byte program written to the boot sector. The segment registers (CS, DS, ES
 The stage3 program is loaded at address 0x07C0:0x6000, the compressed kernel image is loaded at address 0x380000 in the extended memory area, and the initrd file is loaded at 0x500000. The file is read from the disk using a 4K byte track buffer from address 0x07C0:0xEE00, and further transferred to an appropriate address using INT 15h BIOS Function 0x87h. When the loading of stage3, initrd and compressed kernel image is completed, jump to address 0x07C0:0x6000.
 The kernel command line is held in the area of 122 bytes from address 0x280.
 3. stage3  
-Stage3 is linked with the libbzip2 decompression routine. Since an external C library is used, it is necessary to support zero clear of the .bss section. After a series of hardware and software initialization, empty_zero_page information is prepared in 0x07C0:0x0000 to 0x07C0:0x0FFF together with the information written in stage2. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. The decompression function is called, the bzip2 compressed ELF kernel image is restored to the extended memory address 0x100000 or later, and then the ELF file is parsed and loaded. Finally, jump to the entry point to launch the kernel. At this time, it is necessary to set the physical address (0x00007C00) of the empty_zero_page information prepared in the low-order memory in the ESI register.
+Stage3 is linked with the libbzip2 decompression routine. Since an external C library is used, it is necessary to support zero clear of the .bss section. After a series of hardware and software initialization, empty_zero_page information is prepared in 0x07C0:0x0000 to 0x07C0:0x0FFF together with the information written in stage2. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. The decompression function is called, the bzip2 compressed ELF kernel image is restored to the extended memory address 0x100000 or later, and then the ELF32/ELF64 file is parsed and loaded. If the target is ELF64, set the 4G boot pagetable and transition to long mode. Finally, jump to the entry point to launch the kernel. At this time, it is necessary to set the physical address (0x00007C00) of the empty_zero_page information prepared in the low-order memory in the ESI register.
 4. plankton🦠  
-library common to stage1 ~ stage3.
+library common to stage1 ~ stage4.
 
 ### Disk Space Layout
 
