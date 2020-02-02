@@ -1,0 +1,3 @@
+[build]
+target = "i586-stage_3rd.json"
+rustflags = ["-C", "link-arg=-Tsrc/stage_3rd/stage_3rd.ld"]

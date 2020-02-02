@@ -36,7 +36,7 @@ fn stage2() {
 
     print!("\r\nStage2: ");
     println!(
-        "stage3_size = {:04X} : \
+        "stage3+4_size = {:04X} : \
               kernel_size = {:04X} : \
               initrd_size = {:04X}",
         stage31_size + stage32_size,

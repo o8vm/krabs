@@ -2,11 +2,14 @@
 members = [
     "src/stage_1st",
     "src/stage_2nd",
-    "src/stage_3r1",
-    "src/stage_3r2",
+    "src/stage_3rd",
+    "src/stage_4th",
     "src/plankton",
 ]
-exclude = ["eg-kernel"]
+exclude = [
+    "eg-kernel",
+    "eg-kernel64"
+]
 
 [profile.release]
 opt-level = "z"
