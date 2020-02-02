@@ -2,6 +2,7 @@
 #![no_std]
 #[macro_use]
 pub mod text;
+pub mod bz2d;
 pub mod loader;
 pub mod svm;
 
