@@ -2,9 +2,9 @@
 #![no_main]
 
 use plankton::{ELF_START, IMAGE_START, INIT_SEG, KERNEL_SIZE};
-use stage_3r2::bz2d::decompress_kernel;
-use stage_3r2::svm;
-use stage_3r2::{clear_bss, loader::load_elf, loader::GuestAddress, print, println};
+use stage_4th::bz2d::decompress_kernel;
+use stage_4th::svm;
+use stage_4th::{clear_bss, loader::load_elf, loader::GuestAddress, print, println};
 
 #[link_section = ".first"]
 #[no_mangle]
