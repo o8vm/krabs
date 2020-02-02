@@ -51,11 +51,11 @@ do
             bzip2 -zcfk1 "${ELF_KERNEL}" > "${ELF_KERNEL}.bz2"
             BZKERNFILE="${ELF_KERNEL}.bz2"
             BZKERNSIZE="$(cat ${BZKERNFILE} | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-            BINBZKERNS="$(printf %04X ${BZKERNSIZE} | sed 's/\([0-9]\{2\}\)\([0-9]\{2\}\)/\\x\2\\x\1/')"
+            BINBZKERNS="$(printf %04X ${BZKERNSIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
             ;;
         i)  INITRDFILE="${OPTARG}"
             INITRDSIZE="$(cat ${INITRDFILE} | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-            BININITRDS="$(printf %04X ${INITRDSIZE} | sed 's/\([0-9]\{2\}\)\([0-9]\{2\}\)/\\x\2\\x\1/')"
+            BININITRDS="$(printf %04X ${INITRDSIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
             ;;
         c)  COMANDLINE="${OPTARG}"
             if [ "${#COMANDLINE}" -gt 122 ]; then

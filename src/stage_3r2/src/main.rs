@@ -1,17 +1,18 @@
-#![feature(asm)]
 #![no_std]
 #![no_main]
 
 use plankton::{ELF_START, HEAP_END, HEAP_START, IMAGE_START, INIT_SEG, KERNEL_SIZE};
-use stage_3r2::{clear_bss, dump_quad, load_elf};
+use stage_3r2::svm;
+use stage_3r2::{clear_bss, loader::load_elf, loader::GuestAddress, print, println};
 
-#[link_section = ".fisrt"]
+#[link_section = ".first"]
 #[no_mangle]
-fn start_32() -> ! {
+fn stage4() -> ! {
     clear_bss();
     let buf_size = IMAGE_START - ELF_START;
     let ret: i32;
     let kernel_size = unsafe { *((KERNEL_SIZE + (INIT_SEG << 4)) as *const u32) };
+    println!("  Decompressing kernel ...");
 
     ret = unsafe {
         BZ2_bzBuffToBuffDecompress(
@@ -24,33 +25,18 @@ fn start_32() -> ! {
         )
     };
     if ret != 0 {
+        println!("  ... failed!");
         loop {}
     }
-    let entry_addr = load_elf(kernel_size);
-    dump_quad(entry_addr);
-    unsafe {
-        asm!("movl  %eax, (jmp_offset)
-              cld
-              movl  %ebx, %ds
-              movl  %ebx, %es
-              movl  %ebx, %fs
-              movl  %ebx, %gs
-              movl  %ebx, %ss
-              .byte 0xEA
-             jmp_offset: .long 0
-              .word 0x10"
-         :
-         : "{eax}"(entry_addr), "{ebx}"(0x18), "{esi}"(0x7C00)
-         : "ebx", "eax"
-        );
-    }
-    loop {}
-}
 
-use core::panic::PanicInfo;
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+    print!("  Relocating ");
+    let entry_addr = load_elf(kernel_size)
+        .map_err(|err| err.stringify())
+        .unwrap();
+    match entry_addr {
+        GuestAddress::Addr32(entry_addr) => svm::pm::start_kernel(entry_addr),
+        GuestAddress::Addr64(entry_addr) => svm::lm::start_kernel(entry_addr),
+    }
 }
 
 #[link(name = "bz2", kind = "static")]

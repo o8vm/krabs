@@ -1,7 +1,7 @@
-ENTRY(start_32)
+ENTRY(stage4)
 SECTIONS {
-    . = 0x90000;                /* "stage3" will be loaded at phyisical addr */
-    .first  : { *(.fisrt) }     /* Locate "stages" First Excutable code */
+    . = 0x20000;                /* "stage3" will be loaded at phyisical addr */
+    .first  : { *(.first) }     /* Locate "stages" First Excutable code */
     .text   : { *(.text) }      /* Excutable code                       */
     .rodata : { *(.rodata) }    /* Constants (R/O)                      */
     .data   : { *(.data) }      /* Initialized data                     */

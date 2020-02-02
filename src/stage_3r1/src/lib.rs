@@ -2,7 +2,7 @@
 #![no_std]
 
 pub mod init;
-pub mod pm;
+pub mod mpm;
 
 use core::panic::PanicInfo;
 use plankton::{print, println};

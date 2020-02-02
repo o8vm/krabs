@@ -6,7 +6,10 @@ members = [
     "src/stage_3r2",
     "src/plankton",
 ]
-exclude = ["eg-kernel"]
+exclude = [
+    "eg-kernel",
+    "eg-kernel64"
+]
 
 [profile.release]
 opt-level = "z"

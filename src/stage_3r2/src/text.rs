@@ -222,7 +222,7 @@ impl Writer {
         let mut cnt = 0;
         while cnt < h {
             Self::fill_line(dst, w, vram_data!(b' ', self.scrn[*(self.page)].attr));
-            dst += w;
+            dst += w * 2;
             cnt += 1;
         }
     }
