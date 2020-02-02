@@ -93,7 +93,7 @@ fn jmp64(entry_addr: u64) -> ! {
               movl  %eax, %cr0
               lret"
          :
-         : "{eax}"(entry_addr), "{ebx}"((1<<31)|(1<<0))
+         : "{eax}"(entry_addr), "{ebx}"((1<<31)|(1<<0)) "{esi}"(0x7C00)
          :
         );
     }
