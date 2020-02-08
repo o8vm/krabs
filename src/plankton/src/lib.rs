@@ -17,9 +17,10 @@ pub const STAGE32_START: u32 = 0x20000;
 pub const TRACK_BUFFER: u32 = 0xB000;
 pub const TRACK_BUF_SIZE: u32 = 0x4000;
 pub const PGTABLE_START: u64 = 0x1000;
-pub const ELF_START: u32    = 0x00100000;
-pub const IMAGE_START: u32  = 0x00600000;
+
+pub const ELF_START: u32 =    0x00100000;
+pub const IMAGE_START: u32 =  0x00600000;
 pub const INITRD_START: u32 = 0x00900000;
-pub const HEAP_START: u32   = 0x01600000;
-pub const HEAP_END: u32     = 0x01900000;
+pub const HEAP_START: u32 =   0x01600000;
+pub const HEAP_END: u32 =     0x01900000;
 pub const STACK_SIZE: i32 = 1024;
