@@ -9,12 +9,15 @@ Krabs is working on booting vmlinux and other kernels formatted in ELF on 32-bit
 Krabs also aims to support only the minimal Linux boot protocol. This allows you to specify the kernel command line and manipulate the behavior of the kernel at boot time.
 Another feature is that in order to save space, the ELF format kernel is compressed using bzip2 before writing and uses libbzip2 library for decompressing.  
 
-Krabs unfortunately cannot run vmlinux yet. No testing has been done.
-
 ## News
+2020/02/03:
 * Krabs now supports long mode. You can boot the 64bit kernel formatted in ELF64. 
 * Krabs still supports ELF32 on 32bit PCs. 
 * It does not need to rebuild Krabs every time, because it can tell executable file format. Once Krabs is built, it supports both 32-bit and 64-bit.
+
+2020/02/09:
+* Krabs can now let vmlinux uses initrd.
+* But, no testing has been done.
 
 ## Getting Started
 To get started with Krabs, build it from source.
@@ -85,6 +88,10 @@ qemu-system-i386 disk.img -boot c
 ### Example 
 Build and launch a simple kernel that only displays Hello world.
 
+#### vmlinux example
+* 32bit version: wip
+* 64bit version: wip
+
 #### ELF32 example (protect mode)
 
 ```shell
@@ -149,10 +156,30 @@ A 446 byte program written to the boot sector. The segment registers (CS, DS, ES
 2. stage2  
 The stage3 program is loaded at address 0x07C0:0x6000, the compressed kernel image is loaded at address 0x380000 in the extended memory area, and the initrd file is loaded at 0x500000. The file is read from the disk using a 4K byte track buffer from address 0x07C0:0xEE00, and further transferred to an appropriate address using INT 15h BIOS Function 0x87h. When the loading of stage3, initrd and compressed kernel image is completed, jump to address 0x07C0:0x6000.
 The kernel command line is held in the area of 122 bytes from address 0x280.
-3. stage3  
-Stage3 is linked with the libbzip2 decompression routine. Since an external C library is used, it is necessary to support zero clear of the .bss section. After a series of hardware and software initialization, empty_zero_page information is prepared in 0x07C0:0x0000 to 0x07C0:0x0FFF together with the information written in stage2. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. The decompression function is called, the bzip2 compressed ELF kernel image is restored to the extended memory address 0x100000 or later, and then the ELF32/ELF64 file is parsed and loaded. If the target is ELF64, set the 4G boot pagetable and transition to long mode. Finally, jump to the entry point to launch the kernel. At this time, it is necessary to set the physical address (0x00007C00) of the empty_zero_page information prepared in the low-order memory in the ESI register.
+3. stage3 + stage4  
+Stage3 + Stage4 is linked with the libbzip2 decompression routine. Since an external C library is used, it is necessary to support zero clear of the .bss section. After a series of hardware and software initialization, empty_zero_page information is prepared in 0x07C0:0x0000 to 0x07C0:0x0FFF together with the information written in stage2. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. The decompression function is called, the bzip2 compressed ELF kernel image is restored to the extended memory address 0x100000 or later, and then the ELF32/ELF64 file is parsed and loaded. If the target is ELF64, set the 4G boot pagetable and transition to long mode. Finally, jump to the entry point to launch the kernel. At this time, it is necessary to set the physical address (0x00007C00) of the empty_zero_page information prepared in the low-order memory in the ESI or RSI register.
 4. plankton🦠  
 library common to stage1 ~ stage4.
+
+### Krabs Boot Protocol
+Krabs supports only the minimal x86 Linux boot protocol.  
+An OS that uses krabs must be developed under the following assumptions:
+
+**32bit version:**
+* At entry, the CPU is in 32-bit protected mode with paging disabled.
+* A GDT is loaded with the descriptors for selectors `__BOOT_CS(0x10)` and `__BOOT_DS(0x18)`. Both descriptors is 4G flat segment. `__BOOT_CS` has execute/read permission, and `__BOOT_DS` has read/write permission.
+* `CS` is `__BOOT_CS` and `DS`, `ES`, `SS` is `__BOOT_DS`.
+* Interrupt is disabled.
+* `%ebp`, `%edi` and `%ebx` is zero.
+* `%esi` holds the base physical address(0x7C00) of the [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). OS developers should only use cmd_line_ptr.
+
+**64bit version:**
+* At entry, the CPU is in 64-bit mode with paging enabled. 
+* A GDT is loaded with the descriptors for selectors `__BOOT_CS(0x10)` and `__BOOT_DS(0x18)`. Both descriptors is 4G flat segment. `__BOOT_CS` has execute/read permission, and `__BOOT_DS` has read/write permission.
+* `CS` is `__BOOT_CS` and `DS`, `ES`, `SS` is  `__BOOT_DS`.
+* Interrupt is disabled.
+* `%rsi` holds the base physical address(0x7C00) of the [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). OS developers should only use cmd_line_ptr.
+
 
 ### Disk Space Layout
 
