@@ -1,6 +1,6 @@
 use plankton::{
     ios::{io_delay, outb},
-    STAGE32_START,
+    STAGE4_START,
 };
 
 #[repr(C, packed)]
@@ -30,7 +30,7 @@ pub fn move_to_protect() -> ! {
     mask_all_interrupts();
     setup_idt();
     setup_gdt();
-    protected_mode_jump(STAGE32_START)
+    protected_mode_jump(STAGE4_START)
 }
 
 fn mask_all_interrupts() {

@@ -1,5 +1,5 @@
 use super::mem::copy_block;
-use super::{IMAGE_START, INITRD_START, INIT_SEG, STAGE31_START, STAGE32_START, TRACK_BUFFER};
+use super::{IMAGE_START, INITRD_START, INIT_SEG, STAGE3_START, STAGE4_START, TRACK_BUFFER};
 use core::str;
 
 #[derive(Default)]
@@ -173,27 +173,27 @@ impl DiskRecord {
 
     pub fn load_images(
         &self,
-        stage31_size: u16,
-        stage32_size: u16,
+        stage3_size: u16,
+        stage4_size: u16,
         kernel_size: u16,
         initrd_size: u16,
     ) -> Result<(), &'static str> {
         let mut slba = self.get_lba()?;
 
-        if stage31_size > 0 {
+        if stage3_size > 0 {
             print!("  Loading stage3+4 ");
-            Self::read_image(stage31_size, (INIT_SEG << 4) + STAGE31_START, slba)?;
+            Self::read_image(stage3_size, (INIT_SEG << 4) + STAGE3_START, slba)?;
         }
 
-        if stage32_size > 0 {
-            slba += stage31_size as u32;
-            Self::read_image(stage32_size, STAGE32_START, slba)?;
+        if stage4_size > 0 {
+            slba += stage3_size as u32;
+            Self::read_image(stage4_size, STAGE4_START, slba)?;
             println!("");
         }
 
         if kernel_size > 0 {
             print!("  Loading compressed kernel image ");
-            slba += stage32_size as u32;
+            slba += stage4_size as u32;
             Self::read_image(kernel_size, IMAGE_START, slba)?;
             println!("");
         }
