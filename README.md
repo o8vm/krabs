@@ -85,14 +85,10 @@ You can test it using QEMU:
 qemu-system-i386 disk.img -boot c
 ```
 
-### Example 
+## Examples 
 Build and launch a simple kernel that only displays Hello world.
 
-#### vmlinux example
-* 32bit version: wip
-* 64bit version: wip
-
-#### ELF32 example (protect mode)
+### ELF32 example (protect mode)
 
 ```shell
 $ pwd
@@ -108,7 +104,7 @@ screenshot:
 
 ![eg-kernel](docs/images/eg-kernel.png)
 
-#### ELF64 example (long mode)
+### ELF64 example (long mode)
 
 ```shell
 $ pwd
@@ -123,6 +119,10 @@ $ qemu-system-x86_64 eg-kernel/test.img -boot c
 screenshot:
 
 ![eg-kernel64](docs/images/eg-kernel64.png)
+
+## Examples for Linux
+* 64bit version: wip
+* 32bit version: wip
 
 ## Contributing
 Krabs welcomes all contributions.
@@ -161,29 +161,33 @@ Stage3 + Stage4 is linked with the libbzip2 decompression routine. Since an exte
 4. plankton🦠  
 library common to stage1 ~ stage4.
 
-### Krabs Boot Protocol
-Krabs supports only the minimal x86 Linux boot protocol.  
+### Disk Space Layout
+
+![layout](docs/images/layout.png)
+
+## How to use Krabs for your original OS
+Krabs supports only the minimal [x86 Linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).  
 An OS that uses krabs must be developed under the following assumptions:
 
-**32bit version:**
+### 32bit boot protocol 
 * At entry, the CPU is in 32-bit protected mode with paging disabled.
 * A GDT is loaded with the descriptors for selectors `__BOOT_CS(0x10)` and `__BOOT_DS(0x18)`. Both descriptors is 4G flat segment. `__BOOT_CS` has execute/read permission, and `__BOOT_DS` has read/write permission.
 * `CS` is `__BOOT_CS` and `DS`, `ES`, `SS` is `__BOOT_DS`.
 * Interrupt is disabled.
 * `%ebp`, `%edi` and `%ebx` is zero.
-* `%esi` holds the base physical address(0x7C00) of the [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). OS developers should only use cmd_line_ptr.
+* `%esi` holds the base physical address(0x7C00) of the [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). 
 
-**64bit version:**
+### 64bit boot protocol
 * At entry, the CPU is in 64-bit mode with paging enabled. 
 * A GDT is loaded with the descriptors for selectors `__BOOT_CS(0x10)` and `__BOOT_DS(0x18)`. Both descriptors is 4G flat segment. `__BOOT_CS` has execute/read permission, and `__BOOT_DS` has read/write permission.
 * `CS` is `__BOOT_CS` and `DS`, `ES`, `SS` is  `__BOOT_DS`.
 * Interrupt is disabled.
-* `%rsi` holds the base physical address(0x7C00) of the [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). OS developers should only use cmd_line_ptr.
+* `%rsi` holds the base physical address(0x7C00) of the [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). 
 
+### Constraints
 
-### Disk Space Layout
-
-![layout](docs/images/layout.png)
+* The size of vmlinux must be 52MiB or less.
+* The size of initrd/initramfs must be 32MiB or less.
 
 ## License
 
