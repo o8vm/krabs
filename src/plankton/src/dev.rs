@@ -181,7 +181,7 @@ impl DiskRecord {
         let mut slba = self.get_lba()?;
 
         if stage3_size > 0 {
-            print!("  Loading stage3+4 ");
+            print!("  Loading stage3 + stage4 ");
             Self::read_image(stage3_size, (INIT_SEG << 4) + STAGE3_START, slba)?;
         }
 
