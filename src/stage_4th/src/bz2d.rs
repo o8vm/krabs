@@ -15,8 +15,8 @@ extern "C" {
 }
 
 pub fn decompress_kernel(source_len: u32) -> Result<(), &'static str> {
-    use plankton::{ELF_START, IMAGE_START};
-    let buf_size = IMAGE_START - ELF_START;
+    use plankton::{ELF_START, IMAGE_START, INITRD_START};
+    let buf_size = INITRD_START - ELF_START;
     let ret = unsafe {
         BZ2_bzBuffToBuffDecompress(
             ELF_START as *const u8,

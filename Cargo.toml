@@ -7,8 +7,8 @@ members = [
     "src/plankton",
 ]
 exclude = [
-    "eg-kernel",
-    "eg-kernel64"
+    "resources/eg-kernel",
+    "resources/eg-kernel64"
 ]
 
 [profile.release]

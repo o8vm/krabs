@@ -1,0 +1,3 @@
+[build]
+target = "i586-example_os.json"
+rustflags = ["-C", "link-arg=-Texample.ld"]
