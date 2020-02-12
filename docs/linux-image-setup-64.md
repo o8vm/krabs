@@ -1,6 +1,6 @@
-# Creating Custom Linux Images
-
-This example needs to be run on Linux. macOS may be possible, but I don't know how.
+# Creating Custom Linux Images and Booting
+Create custom Linux images and boot it with Krabs.
+This example needs to be run on Linux.
 
 1. Build a vmlinux
 3. Create a initramfs
@@ -41,7 +41,8 @@ This example needs to be run on Linux. macOS may be possible, but I don't know h
    File systems ---> Pseudo filesystems ---> /proc file system support ---> yes
    File systems ---> Pseudo filesystems ---> sysfs file system support ---> yes
    ```
-   Or Copy the [my recommended config](../resources/.config) to `.config`, then do the menuconfig for adjustments:
+   Or Copy the [my recommended config](../resources/.config) to `.config`, then
+   do the menuconfig for adjustments:
    ```shell
    wget https://raw.githubusercontent.com/ellbrid/krabs/master/resources/.config -O .config
    make menuconfig
@@ -58,11 +59,13 @@ This example needs to be run on Linux. macOS may be possible, but I don't know h
    cd ..
    mkdir --parents src/initramfs/{bin,dev,etc,lib,lib64,mnt/root,proc,root,sbin,sys}
    ```
-2. Copy basic device nodes(null, console, tty, sda1, sda2 ...) from the root filesystem to the initramfs example location:
+2. Copy basic device nodes(null, console, tty, sda1, sda2 ...) from the root
+filesystem to the initramfs example location:
    ```shell
    sudo cp --archive /dev/{null,console,tty,tty[0-4],sda,sda[1-8],mem,kmsg,random,urandom,zero} src/initramfs/dev/
    ```
-3. Instead of using some core tools like sh and mount, we can get them from busybox:
+3. Instead of using some core tools like sh and mount, we can get them from
+busybox:
    ```shell
    curl -L 'https://www.busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64' > src/initramfs/bin/busybox
    sudo chmod +x src/initramfs/bin/busybox
@@ -126,7 +129,7 @@ This example needs to be run on Linux. macOS may be possible, but I don't know h
    Last sector, +sectors or +size{K,M,G} (2048-1048575, default 1048575): 206848
    Partition 1 of type Linux and of size 100 MiB is set
    ```
-   boot flag:
+   bootflaged partition is needed. Set boot flag on 1st partition:
    ```
    Command (m for help): a
    Selected partition 1
@@ -165,12 +168,16 @@ This example needs to be run on Linux. macOS may be possible, but I don't know h
    ```
 
 ## Boot the custom linux image with Krabs
-Just execute the following command:
+Just execute the following command.  
+`build.sh` compress the vmlinux with bzip2 and writes it into disk.img:
 ```shell
 $ pwd
 path/to/krabs
 $ ./tools/build.sh -k path/to/vmlinux -i path/to/initramfs.cpio.gz path/to/disk.img 
 ```
+
+## DiskSpace layout
+![layout.png](images/layout.png)
 
 ## Working Example
 Use qemu:

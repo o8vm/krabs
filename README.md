@@ -1,19 +1,27 @@
 # Krabs: x86 bootloader
-Krabs is an experimental x86 bootloader written in Rust.  
-Krabs can boot the ELF formatted kernel which compressed with bzip2. Krabs decompresses the bz2 image and relocate the ELF image, then boot the kernel.
+Krabs is an experimental x86/x86_64 bootloader written in Rust.  
+Krabs can boot the ELF formatted kernel which compressed with bzip2. Krabs
+decompresses the bz2 image and relocate the ELF image, then boot the kernel.
 
-Some of the source code uses libbzip2 C library for decompressing, but the rest is completely Rust only.
+Some of the source code uses libbzip2 C library for decompressing, but the rest
+is completely Rust only.
 
 ## What is Krabs?
-Krabs is working on booting vmlinux and other kernels formatted in ELF on 32-bit/64-bit PCs and is under the development.  
-Krabs also aims to support only the minimal Linux boot protocol. This allows you to specify the kernel command line and manipulate the behavior of the kernel at boot time.
-Another feature is that in order to save space, the ELF format kernel is compressed using bzip2 before writing and uses libbzip2 library for decompressing.  
+Krabs is working on booting vmlinux and other kernels formatted in ELF on
+32-bit/64-bit PCs and is under the development.  
+Krabs also aims to support only the minimal Linux boot protocol. This allows you
+to specify the kernel command line and manipulate the behavior of the kernel at
+boot time.
+Another feature is that in order to save space, the ELF format kernel is
+compressed using bzip2 before use and uses libbzip2 library for decompressing.  
 
 ## News
 2020/02/03:
-* Krabs now supports long mode. You can boot the 64bit kernel formatted in ELF64. 
+* Krabs now supports long mode. You can boot the 64bit kernel formatted in
+ELF64. 
 * Krabs still supports ELF32 on 32bit PCs. 
-* It does not need to rebuild Krabs every time, because it can tell executable file format. Once Krabs is built, it supports both 32-bit and 64-bit.
+* It does not need to rebuild Krabs every time, because it can tell executable
+file format. Once Krabs is built, it supports both 32-bit and 64-bit.
 
 2020/02/09:
 * Krabs can now let vmlinux uses initrd.
@@ -23,7 +31,9 @@ Another feature is that in order to save space, the ELF format kernel is compres
 To get started with Krabs, build it from source.
 
 ### Requirements
-You need a nightly Rust compiler and binutils. First you need to install the [cargo-xbuild](https://github.com/rust-osdev/cargo-xbuild) and [cargo-binutils](https://github.com/rust-embedded/cargo-binutils):
+You need a nightly Rust compiler and binutils. First you need to install the
+[cargo-xbuild](https://github.com/rust-osdev/cargo-xbuild) and
+[cargo-binutils](https://github.com/rust-embedded/cargo-binutils):
 
 ```shell
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -33,7 +43,8 @@ rustup component add llvm-tools-preview
 rustup component add rust-src
 ```
 
-For testing, you also need the qemu and MBR disk image.  
+For testing, you also need the qemu and MBR disk image. Disk image should have a
+bootflaged partition.
 The following is an example on macOS.
 
 ```shell
@@ -76,78 +87,49 @@ cd krabs
 ```
 
 krabs will be installed into disk.img.   
-The -k, -i, and -c options are not required.
+The `-k`, `-i`, and `-c` options are not required.
 
 ### Run
 You can test it using QEMU:  
 
 ```shell
-qemu-system-x86_64 disk.img -boot c
+qemu-system-x86_64 --hda disk.img
 ```
 
 ## Examples 
 Simple examples are described in [the example document](docs/example.md).  
 This is also a quickstart guide and should be read.
 
-### Examples for Linux
-* 64bit version is described in [the docs of 'Creating Custom Linux Images'](docs/linux-image-setup-64.md).
-* 32bit version: wip
+Examples for x86-64 Linux is described in
+[the docs of 'Creating Custom Linux Images'](docs/linux-image-setup-64.md).
 
 ## Contributing
 Krabs welcomes all contributions.
 
-To contribute to Krabs, check out the [getting started guide](#getting-started) and then the Krabs [contribution guidelines](CONTRIBUTING.md).
+To contribute to Krabs, check out the [getting started guide](#getting-started)
+and then the Krabs [contribution guidelines](CONTRIBUTING.md).
 
 ## Design
-The minimum requirement for booting an ELF-format OS kernel is that the ELF-format image file must be parsed and loaded to the address specified in the program header.
-In this project, the following four types of initialization processing are performed.
+Krabs's overall architecture is described in
+[the design document](docs/design.md) and
+[the specification document](docs/specification.md).
 
-**Hardware initialization:**
-* Setting the keyboard repeat rate.
-* Disable interrupts and mask all interrupt levels.
-* Setting Interrupt descriptor (IDT) and segment descriptor (GDT). As a result, all selectors (CS, DS, ES, FS, GS) refer to the 4 Gbyte flat linear address space.
-* Change the address bus to 32 bits (Enable A20 line).
-* Transition to protected mode.
-* If the target is ELF64, set the 4G boot pagetable and transition to long mode.
-
-**Software initialization:**
-* Get system memory by BIOS call.
-
-**Information transmission to the kernel:**
-* Setting kernel parameters.(mem=, root=, etc. For details, see [kernel-parameters.txt](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt))
-
-**Relocate the kernel:**
-* The target is an ELF file, but Krabs uses it after bzip2 compression. Therefore, two-stage relocation is needed. One is bzip2 decompression and the other is ELF relocation.
-
-### Structure and Overview
-1. stage1  
-A 446 byte program written to the boot sector. The segment registers (CS, DS, ES, SS) are set to `0x07C0`, and the stack pointer (ESP) is initialized to `0xFFF0`. After that, stage2 is loaded to address `0x07C0:0x0200`, and jumps to address `0x07C0:0x0280`. In the latter half of stage1, there is an area for storing the sector length (in units of 512 bytes) of the stage2 program.
-2. stage2  
-The stage3 program is loaded at address `0x07C0:0x6000`, the compressed kernel image is loaded at address `0x0350_0000` in the extended memory area, and the initrd file is loaded at `0x0560_0000`. The file is read from the disk using a 4K byte track buffer from address `0x07C0:0xEE00`, and further transferred to an appropriate address using `INT 15h` BIOS Function `0x87h`. When the loading of stage3, initrd and compressed kernel image is completed, jump to address `0x07C0:0x6000`.
-The kernel command line is held in the area of 122 bytes from address `0x280`.
-3. stage3 + stage4  
-Stage3 + Stage4 is linked with the libbzip2 decompression routine. Since an external C library is used, it is necessary to support zero clear of the .bss section. After a series of hardware and software initialization, empty_zero_page information is prepared in `0x07C0:0x0000` to `0x07C0:0x0FFF` together with the information written in stage2. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. The decompression function is called, the bzip2 compressed ELF kernel image is restored to the extended memory address `0x100000` or later, and then the ELF32/ELF64 file is parsed and loaded. If the target is ELF64, set the 4G boot pagetable and transition to long mode. Finally, jump to the entry point to launch the kernel. At this time, it is necessary to set the physical address (`0x00007C00`) of the empty_zero_page information prepared in the low-order memory in the ESI or RSI register.
-4. plankton🦠  
-library common to stage1 ~ stage4.
-
-### Disk Space Layout
-
-![layout](docs/images/layout.png)
-
-## How to use Krabs for your original OS
-
-Krabs supports only the minimal [x86 Linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html). So your OS needs to use this as well.  
-Read more about it in [the How-To docs](docs/how-to.md).
-
-
-## Constraints
-
-* The size of kernel must be 85MiB or less.
-* The size of initrd/initramfs must be 32MiB or less.
-
+## Features
+1. Supports legacy BIOS.
+2. Supported media are HDD and SSD which have MBR.
+3. Supports 32bit protected mode and 64bit long mode. 
+4. Supports minimal
+[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
+5. Supports OS kernel formatted in ELF32/ELF64.
+6. To save space, OS kernels is compressd with bzip2 before use. When loading, Krabs
+unpacks it.
+7. An area of ​​122 bytes is reserved for the kernel command line.
+Using this area, Krabs can transmit parameters to the OS, and can manipulate the
+behavior of the kernel at startup.
+8. Krabs can load modules such as initramsfs/initrd according to 
+[the x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
 
 ## License
-
 This project is licensed under either of
 
 * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
@@ -162,11 +144,14 @@ for inclusion in Serde by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
 ## Contanct
-
 You can get in touch with me in the following ways:
 
-* Contact me on my [twitter](https://twitter.com/ellbrid). _Note: I'm on a Japan time zone._
+* Contact me on my matrix chat: @ellbrid:matrix.org. 
+* Contact me on my [twitter](https://twitter.com/ellbrid).
 * Open a GitHub issue in this repository.
 * Email me at [ell@exoskeleton.dev](mailto:ell@exoskeleton.dev).
 
-When communicating within the Krabs community, please mind our [code of conduct](CODE_OF_CONDUCT.md).
+_Note: I'm on a Japan time zone._  
+
+When communicating within the Krabs community, please mind our
+[code of conduct](CODE_OF_CONDUCT.md).
