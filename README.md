@@ -127,7 +127,7 @@ unpacks it.
 Using this area, Krabs can transmit parameters to the OS, and can manipulate the
 behavior of the kernel at startup.
 8. Krabs can load modules such as initramsfs/initrd according to 
-[the x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
+[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
 
 ## License
 This project is licensed under either of

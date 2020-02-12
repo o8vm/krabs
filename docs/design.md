@@ -9,28 +9,26 @@ decompresses the bz2 image and relocate the ELF image, then boot the kernel.
 
 ### Features
 1. Supports legacy BIOS.
-2. Supported media are HDD and SSD.
-3. Supports 32bit protect mode and 64bit long mode. It does not need to rebuild
-Krabs every time, because it can tell executable file format. Once Krabs is
-built, it supports both 32-bit and 64-bit.
-4. Supports OS that follows
-[the x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
+2. Supported media are HDD and SSD which have MBR.
+3. Supports 32bit protected mode and 64bit long mode. 
+4. Supports minimal
+[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
 5. Supports OS kernel formatted in ELF32/ELF64.
-6. Use OS kernels after bzip2 compression to save space. When loading, Krabs
+6. To save space, OS kernels is compressd with bzip2 before use. When loading, Krabs
 unpacks it.
 7. An area of ​​122 bytes is reserved for the kernel command line.
 Using this area, Krabs can transmit parameters to the OS, and can manipulate the
 behavior of the kernel at startup.
 8. Krabs can load modules such as initramsfs/initrd according to 
-[the x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
+[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
 
 ### Specifications
 Krabs's technical specifications are available in
-[the Specifications document](docs/specification.md).
+[the Specifications document](specifications.md).
 Krabs supports only the minimal
 [x86 Linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
 So your OS needs to use this as well.  
-Read more about it in [the Specification document](docs/specification.md).
+Read more about it in [the Specification document](specifications.md).
 
 ## How Krabs works
 The minimum requirement for booting an ELF-formatted kernel is that the kernel
