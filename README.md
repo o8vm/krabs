@@ -101,7 +101,7 @@ Simple examples are described in [the example document](docs/example.md).
 This is also a quickstart guide and should be read.
 
 Examples for x86-64 Linux is described in
-[the docs of 'Creating Custom Linux Images'](docs/linux-image-setup-64.md).
+[the docs of 'Creating Custom Linux Images and Booting'](docs/linux-image-setup-64.md).
 
 ## Contributing
 Krabs welcomes all contributions.
@@ -112,7 +112,7 @@ and then the Krabs [contribution guidelines](CONTRIBUTING.md).
 ## Design
 Krabs's overall architecture is described in
 [the design document](docs/design.md) and
-[the specification document](docs/specification.md).
+[the specification document](docs/specifications.md).
 
 ## Features
 1. Supports legacy BIOS.
