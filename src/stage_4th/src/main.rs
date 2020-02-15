@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use plankton::{INIT_SEG, KERNEL_SIZE};
+use plankton::layout::{INIT_SEG, KERNEL_SIZE};
 use stage_4th::{
     bz2d::decompress_kernel, clear_bss, cmdl, loader::load_elf, loader::GuestAddress, print,
     println, svm,

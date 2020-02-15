@@ -42,8 +42,8 @@ fn enable_pae() {
 }
 
 fn setup_page_tables() {
+    use plankton::layout::PGTABLE_START;
     use plankton::mem::MemoryRegion;
-    use plankton::PGTABLE_START;
     let mut pg_table = MemoryRegion::new(PGTABLE_START, 8 * 6 * 512);
     pg_table
         .as_mut_slice::<u64>(0x0000, 6 * 512)
@@ -72,7 +72,7 @@ fn enable_paging() {
     unsafe {
         // Enable the boot page tables
         asm!("movl  %eax, %cr3"
-         :: "{eax}"(plankton::PGTABLE_START)
+         :: "{eax}"(plankton::layout::PGTABLE_START)
         );
 
         // Enable Long mode in EFER (Extended Feature Enable Register)

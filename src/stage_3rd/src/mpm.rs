@@ -1,7 +1,5 @@
-use plankton::{
-    ios::{io_delay, outb},
-    STAGE4_START,
-};
+use plankton::ios::{io_delay, outb};
+use plankton::layout::STAGE4_START;
 
 #[repr(C, packed)]
 struct DescoritorTable {

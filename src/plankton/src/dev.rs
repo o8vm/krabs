@@ -1,5 +1,7 @@
+use super::layout::{
+    IMAGE_START, INITRD_START, INIT_SEG, STAGE3_START, STAGE4_START, TRACK_BUFFER,
+};
 use super::mem::copy_block;
-use super::{IMAGE_START, INITRD_START, INIT_SEG, STAGE3_START, STAGE4_START, TRACK_BUFFER};
 use core::str;
 
 #[derive(Default)]

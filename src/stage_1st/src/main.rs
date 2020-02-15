@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+use plankton::layout::{STAGE2_LOAD, STAGE2_START};
 use plankton::{con::inform, dev::Dap};
 use stage_1st::entry;
 
@@ -9,7 +10,7 @@ pub static mut STAGE2_SISE: u16 = 00;
 
 entry!(main);
 fn main() {
-    let ptr = plankton::STAGE2_START as *const ();
+    let ptr = STAGE2_START as *const ();
     let stage2: fn() = unsafe { core::mem::transmute(ptr) };
     inform(b"Stage1: ");
     match Dap::hd_reset(0x80) {
@@ -20,7 +21,7 @@ fn main() {
         Ok(_) => {}
     }
     unsafe {
-        match Dap::new(STAGE2_SISE, plankton::STAGE2_LOAD | (0x07C0 << 16), 1).hd_read(0x80) {
+        match Dap::new(STAGE2_SISE, STAGE2_LOAD | (0x07C0 << 16), 1).hd_read(0x80) {
             Err(err) => {
                 inform(err);
                 return;

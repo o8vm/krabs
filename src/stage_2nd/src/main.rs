@@ -1,7 +1,8 @@
 #![no_std]
 #![no_main]
 
-use plankton::{dev::DiskRecord, print, println, STAGE3_START};
+use plankton::layout::STAGE3_START;
+use plankton::{dev::DiskRecord, print, println};
 use stage_2nd::ParamTable;
 
 #[link_section = ".table"]

@@ -1,6 +1,6 @@
 use core::ffi::c_void;
 use core::ptr;
-use plankton::{HEAP_END, HEAP_START};
+use plankton::layout::{HEAP_END, HEAP_START};
 
 #[link(name = "bz2", kind = "static")]
 extern "C" {
@@ -15,7 +15,7 @@ extern "C" {
 }
 
 pub fn decompress_kernel(source_len: u32) -> Result<(), &'static str> {
-    use plankton::{ELF_START, IMAGE_START, INITRD_START};
+    use plankton::layout::{ELF_START, IMAGE_START, INITRD_START};
     let buf_size = INITRD_START - ELF_START;
     let ret = unsafe {
         BZ2_bzBuffToBuffDecompress(

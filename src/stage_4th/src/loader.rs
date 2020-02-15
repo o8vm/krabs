@@ -2,7 +2,7 @@ pub mod elf;
 
 use crate::loader::GuestAddress::Addr32;
 use crate::loader::GuestAddress::Addr64;
-use plankton::{mem::MemoryRegion, ELF_START};
+use plankton::{layout::ELF_START, mem::MemoryRegion};
 
 #[derive(Debug, PartialEq)]
 pub enum ParseError {

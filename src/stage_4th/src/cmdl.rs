@@ -1,4 +1,5 @@
-use plankton::{mem::MemoryRegion, CMD_LINE_ADDR, PRE_CMDLINEAD};
+use plankton::layout::{CMD_LINE_ADDR, PRE_CMDLINEAD};
+use plankton::mem::MemoryRegion;
 
 pub fn setup_cmdline() {
     let pre_cmdline = unsafe { *(PRE_CMDLINEAD as *const [u8; 120]) };
