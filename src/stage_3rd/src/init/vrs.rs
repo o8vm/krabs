@@ -7,7 +7,7 @@ pub fn set_version() {
     const KERNEL_MIN_ALIGNMENT_BYTES: u32 = 0x0100_0000;
 
     let zero_page = MemoryRegion::new(0x000, 4096);
-    
+
     zero_page.write_u16(0x1FE, KERNEL_BOOT_FLAG_MAGIC);
     zero_page.write_u32(0x202, KERNEL_HDR_MAGIC);
     zero_page.write_u16(0x206, 0x020C);

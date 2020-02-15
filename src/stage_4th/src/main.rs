@@ -3,14 +3,17 @@
 
 use plankton::{INIT_SEG, KERNEL_SIZE};
 use stage_4th::{
-    bz2d::decompress_kernel, clear_bss, loader::load_elf, loader::GuestAddress, print, println, svm,
+    bz2d::decompress_kernel, clear_bss, cmdl, loader::load_elf, loader::GuestAddress, print,
+    println, svm,
 };
 
 #[link_section = ".first"]
 #[no_mangle]
 fn stage4() -> ! {
     clear_bss();
+    cmdl::setup_cmdline();
     let kernel_size = unsafe { *((KERNEL_SIZE + (INIT_SEG << 4)) as *const u32) };
+
     println!("  Decompressing kernel ...");
     decompress_kernel(kernel_size).unwrap();
 

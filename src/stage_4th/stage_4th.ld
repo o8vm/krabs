@@ -1,6 +1,6 @@
 ENTRY(stage4)
 SECTIONS {
-    . = 0x20000;                /* "stage4" will be loaded at phyisical addr */
+    . = 0x30000;                /* "stage4" will be loaded at phyisical addr */
     .first  : { *(.first) }     /* Locate "stage4" First Excutable code */
     .text   : { *(.text) }      /* Excutable code                       */
     .rodata : { *(.rodata) }    /* Constants (R/O)                      */
