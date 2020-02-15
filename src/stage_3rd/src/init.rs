@@ -10,9 +10,9 @@ pub mod zero;
 
 pub fn setup(kernel_size: u16, initrd_size: u16, cmd_line: &[u8]) {
     zero::clear_bss();
-    zero::Pages::FirstHalf.clear();
-    cmd::set_cmdline(cmd_line);
     zero::Pages::SecondHalf.clear();
+    cmd::set_cmdline(cmd_line);
+    zero::Pages::FirstHalf.clear();
     msz::set_mem_size();
     kbd::set_keyboard();
     ist::query_ist();

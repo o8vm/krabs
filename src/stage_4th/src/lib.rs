@@ -3,6 +3,7 @@
 #[macro_use]
 pub mod text;
 pub mod bz2d;
+pub mod cmdl;
 pub mod loader;
 pub mod svm;
 
