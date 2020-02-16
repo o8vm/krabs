@@ -182,7 +182,9 @@ $ ./tools/build.sh -k path/to/vmlinux -i path/to/initramfs.cpio.gz path/to/disk.
 ## Working Example
 Use qemu:
 ```shell
-qemu-system-x86_64 --hda disk.img
+qemu-system-x86_64 --hda disk.img -m 1G
 ```
+
+_Note: you shoud select 1G or more. Otherwise, OOM may occur._
 
 ![bootlin](images/bootlin.gif)
