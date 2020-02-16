@@ -43,6 +43,15 @@ rustup component add llvm-tools-preview
 rustup component add rust-src
 ```
 
+If you are using 64-bit Linux, you need to create a 32-bit multilib environment:
+
+```
+RHEL/CentOS:
+$ sudo yum install -y glibc.i686 glibc-devel.i686 libgcc.i686
+Ubuntu:
+$ sudo apt install gcc-multilib -y
+```
+
 For testing, you also need the qemu and MBR disk image. Disk image should have a
 bootflaged partition.
 The following is an example on macOS.
