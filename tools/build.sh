@@ -20,7 +20,7 @@ print_usage_and_exit() {
 cat <<-USAGE 1>&2
 Usage   : ${0##*/} [options] path_to_disk_image
 Options : -k ELF_file
-            Set the 32bit ELF kernel you want to boot.
+            Set the 32bit/64bit ELF kernel you want to boot.
           -i initrd_file
             Set initrd.
           -c "command line"
@@ -93,26 +93,26 @@ fi
 
 {
 printf "== Writing stage_1st into boot sector. ==\n"
-pushd ./src/stage_1st
+cd ./src/stage_1st
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_1st/release/stage_1st ../../target/i586-stage_1st/release/stage_1st.bin
 else
-    popd
+    cd $KRABS_DIR
     error_exit 1 'stage_1st build failed'
 fi 2>&1
-popd
+cd $KRABS_DIR
 dd if=target/i586-stage_1st/release/stage_1st.bin of="${DISKIMAGE}" conv=notrunc
 
 
 printf "\n== Writing stage_2nd into Disk image. ==\n"
-pushd ./src/stage_2nd
+cd ./src/stage_2nd
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_2nd/release/stage_2nd ../../target/i586-stage_2nd/release/stage_2nd.bin
 else
-    popd
+    cd $KRABS_DIR
     error_exit 1 'stage_2nd build failed'
 fi 2>&1
-popd
+cd $KRABS_DIR
 dd if=target/i586-stage_2nd/release/stage_2nd.bin of="${DISKIMAGE}" bs=512 seek=1 conv=notrunc
 STAGE2SIZE="$(cat target/i586-stage_2nd/release/stage_2nd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
 BINSTAGE2S="$(printf %04X ${STAGE2SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
@@ -120,14 +120,14 @@ printf "${BINSTAGE2S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x1bc)) count=2 conv=
 
 
 printf "\n== Building stage_3. ==\n"
-pushd ./src/stage_3rd
+cd ./src/stage_3rd
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_3rd/release/stage_3rd ../../target/i586-stage_3rd/release/stage_3rd.bin
 else
-    popd
+    cd $KRABS_DIR
     error_exit 1 'stage_3rd build failed'
 fi 2>&1
-popd
+cd $KRABS_DIR
 dd if=target/i586-stage_3rd/release/stage_3rd.bin of="${DISKIMAGE}" bs=512 seek="${BOOTPART}" conv=notrunc 
 STAGE3SIZE="$(cat target/i586-stage_3rd/release/stage_3rd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
 BINSTAGE3S="$(printf %04X ${STAGE3SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
@@ -135,14 +135,14 @@ printf "${BINSTAGE3S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x278)) count=2 conv=
 
 
 printf "\n== Building stage_4. ==\n"
-pushd ./src/stage_4th
+cd ./src/stage_4th
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_4th/release/stage_4th ../../target/i586-stage_4th/release/stage_4th.bin
 else
-    popd
+    cd $KRABS_DIR
     error_exit 1 'stage_4th build failed'
 fi 2>&1
-popd
+cd $KRABS_DIR
 dd if=target/i586-stage_4th/release/stage_4th.bin of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE3SIZE}))" conv=notrunc 
 STAGE4SIZE="$(cat target/i586-stage_4th/release/stage_4th.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
 BINSTAGE4S="$(printf %04X ${STAGE4SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
