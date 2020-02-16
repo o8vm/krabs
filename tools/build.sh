@@ -7,6 +7,9 @@ set -u
 umask 0022
 unset IFS
 export LC_ALL='C'
+SCRIPT_DIR="$(cd $(dirname $0); pwd)"
+KRABS_DIR="${SCRIPT_DIR%/*}"
+cd $KRABS_DIR
 
 # === Define the functions =====================================================
 error_exit() {
@@ -58,8 +61,8 @@ do
             BININITRDS="$(printf %04X ${INITRDSIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
             ;;
         c)  COMANDLINE="${OPTARG}"
-            if [ "${#COMANDLINE}" -gt 122 ]; then
-                error_exit 1 'cmdline is too long. it should be under 122 bytes.'
+            if [ "${#COMANDLINE}" -gt 120 ]; then
+                error_exit 1 'cmdline is too long. it should be under 120 bytes.'
             fi
             ;;
     esac
@@ -70,6 +73,7 @@ case "$#" in
     0)  print_usage_and_exit
         ;;
     1)  if [   -f "$1"  ] || 
+           [   -b "$1"  ] ||
            [   -c "$1"  ] || 
            [   -p "$1"  ]; then
           DISKIMAGE=$1
@@ -92,55 +96,58 @@ printf "== Writing stage_1st into boot sector. ==\n"
 pushd ./src/stage_1st
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_1st/release/stage_1st ../../target/i586-stage_1st/release/stage_1st.bin
-    dd if=../../target/i586-stage_1st/release/stage_1st.bin of="../../${DISKIMAGE}" conv=notrunc
 else
     popd
     error_exit 1 'stage_1st build failed'
 fi 2>&1
 popd
+dd if=target/i586-stage_1st/release/stage_1st.bin of="${DISKIMAGE}" conv=notrunc
+
 
 printf "\n== Writing stage_2nd into Disk image. ==\n"
 pushd ./src/stage_2nd
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_2nd/release/stage_2nd ../../target/i586-stage_2nd/release/stage_2nd.bin
-    dd if=../../target/i586-stage_2nd/release/stage_2nd.bin of="../../${DISKIMAGE}" bs=512 seek=1 conv=notrunc
-    STAGE2SIZE="$(cat ../../target/i586-stage_2nd/release/stage_2nd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-    BINSTAGE2S="$(printf %04X ${STAGE2SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
-    printf "${BINSTAGE2S}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x1bc)) count=2 conv=notrunc
 else
     popd
     error_exit 1 'stage_2nd build failed'
 fi 2>&1
 popd
+dd if=target/i586-stage_2nd/release/stage_2nd.bin of="${DISKIMAGE}" bs=512 seek=1 conv=notrunc
+STAGE2SIZE="$(cat target/i586-stage_2nd/release/stage_2nd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
+BINSTAGE2S="$(printf %04X ${STAGE2SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
+printf "${BINSTAGE2S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x1bc)) count=2 conv=notrunc
+
 
 printf "\n== Building stage_3. ==\n"
 pushd ./src/stage_3rd
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_3rd/release/stage_3rd ../../target/i586-stage_3rd/release/stage_3rd.bin
-    dd if=../../target/i586-stage_3rd/release/stage_3rd.bin of="../../${DISKIMAGE}" bs=512 seek="${BOOTPART}" conv=notrunc 
-    STAGE3SIZE="$(cat ../../target/i586-stage_3rd/release/stage_3rd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-    BINSTAGE3S="$(printf %04X ${STAGE3SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
-    printf "${BINSTAGE3S}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x278)) count=2 conv=notrunc
 else
     popd
     error_exit 1 'stage_3rd build failed'
 fi 2>&1
 popd
+dd if=target/i586-stage_3rd/release/stage_3rd.bin of="${DISKIMAGE}" bs=512 seek="${BOOTPART}" conv=notrunc 
+STAGE3SIZE="$(cat target/i586-stage_3rd/release/stage_3rd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
+BINSTAGE3S="$(printf %04X ${STAGE3SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
+printf "${BINSTAGE3S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x278)) count=2 conv=notrunc
 
 
 printf "\n== Building stage_4. ==\n"
 pushd ./src/stage_4th
 if cargo xbuild --release; then
     cargo objcopy -- -I elf32-i386 -O binary ../../target/i586-stage_4th/release/stage_4th ../../target/i586-stage_4th/release/stage_4th.bin
-    dd if=../../target/i586-stage_4th/release/stage_4th.bin of="../../${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE3SIZE}))" conv=notrunc 
-    STAGE4SIZE="$(cat ../../target/i586-stage_4th/release/stage_4th.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-    BINSTAGE4S="$(printf %04X ${STAGE4SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
-    printf "${BINSTAGE4S}" | dd of="../../${DISKIMAGE}" bs=1 seek=$((0x27a)) count=2 conv=notrunc
 else
     popd
     error_exit 1 'stage_4th build failed'
 fi 2>&1
 popd
+dd if=target/i586-stage_4th/release/stage_4th.bin of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE3SIZE}))" conv=notrunc 
+STAGE4SIZE="$(cat target/i586-stage_4th/release/stage_4th.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
+BINSTAGE4S="$(printf %04X ${STAGE4SIZE} | sed 's/\([0-9A-F]\{2\}\)\([0-9A-F]\{2\}\)/\\x\2\\x\1/')"
+printf "${BINSTAGE4S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x27a)) count=2 conv=notrunc
+
 
 # Writing kenrel and initrd, if exists.
 if [ -n "${BZKERNFILE:-}" ]; then
