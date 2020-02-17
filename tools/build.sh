@@ -54,11 +54,11 @@ do
             bzip2 -zcfk1 "${ELF_KERNEL}" > "${ELF_KERNEL}.bz2"
             BZKERNFILE="${ELF_KERNEL}.bz2"
             BZKERNSIZE="$(cat ${BZKERNFILE} | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-            BINBZKERNS="$(printf %06o ${BZKERNSIZE} | sed 's/\([0-8]\{3\}\)\([0-8]\{3\}\)/\\\2\\\1/')"
+            BINBZKERNS="$(printf '\%03o\%03o\n' $((${BZKERNSIZE} & 0xFF)) $(((${BZKERNSIZE} & 0xFF00)>>8)))"
             ;;
         i)  INITRDFILE="${OPTARG}"
             INITRDSIZE="$(cat ${INITRDFILE} | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-            BININITRDS="$(printf %06o ${INITRDSIZE} | sed 's/\([0-8]\{3\}\)\([0-8]\{3\}\)/\\\2\\\1/')"
+            BININITRDS="$(printf '\%03o\%03o\n' $((${INITRDSIZE} & 0xFF)) $(((${INITRDSIZE} & 0xFF00)>>8)))"
             ;;
         c)  COMANDLINE="${OPTARG}"
             if [ "${#COMANDLINE}" -gt 120 ]; then
@@ -115,9 +115,8 @@ fi 2>&1
 cd $KRABS_DIR
 dd if=target/i586-stage_2nd/release/stage_2nd.bin of="${DISKIMAGE}" bs=512 seek=1 conv=notrunc
 STAGE2SIZE="$(cat target/i586-stage_2nd/release/stage_2nd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-BINSTAGE2S="$(printf %06o ${STAGE2SIZE} | sed 's/\([0-8]\{3\}\)\([0-8]\{3\}\)/\\\2\\\1/')"
+BINSTAGE2S="$(printf '\%03o\%03o\n' $((${STAGE2SIZE} & 0xFF)) $(((${STAGE2SIZE} & 0xFF00)>>8)))"
 printf "${BINSTAGE2S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x1bc)) count=2 conv=notrunc
-
 
 printf "\n== Building stage_3. ==\n"
 cd ./src/stage_3rd
@@ -130,7 +129,7 @@ fi 2>&1
 cd $KRABS_DIR
 dd if=target/i586-stage_3rd/release/stage_3rd.bin of="${DISKIMAGE}" bs=512 seek="${BOOTPART}" conv=notrunc 
 STAGE3SIZE="$(cat target/i586-stage_3rd/release/stage_3rd.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-BINSTAGE3S="$(printf %06o ${STAGE3SIZE} | sed 's/\([0-8]\{3\}\)\([0-8]\{3\}\)/\\\2\\\1/')"
+BINSTAGE3S="$(printf '\%03o\%03o\n' $((${STAGE3SIZE} & 0xFF)) $(((${STAGE3SIZE} & 0xFF00)>>8)))"
 printf "${BINSTAGE3S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x278)) count=2 conv=notrunc
 
 
@@ -145,7 +144,7 @@ fi 2>&1
 cd $KRABS_DIR
 dd if=target/i586-stage_4th/release/stage_4th.bin of="${DISKIMAGE}" bs=512 seek="$((${BOOTPART}+${STAGE3SIZE}))" conv=notrunc 
 STAGE4SIZE="$(cat target/i586-stage_4th/release/stage_4th.bin | wc -c | awk '{print $1}' | sed 's:$:/512+1:' | bc)"
-BINSTAGE4S="$(printf %06o ${STAGE4SIZE} | sed 's/\([0-8]\{3\}\)\([0-8]\{3\}\)/\\\2\\\1/')"
+BINSTAGE4S="$(printf '\%03o\%03o\n' $((${STAGE4SIZE} & 0xFF)) $(((${STAGE4SIZE} & 0xFF00)>>8)))"
 printf "${BINSTAGE4S}" | dd of="${DISKIMAGE}" bs=1 seek=$((0x27a)) count=2 conv=notrunc
 
 
