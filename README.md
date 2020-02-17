@@ -17,15 +17,20 @@ compressed using bzip2 before use and uses libbzip2 library for decompressing.
 
 ## News
 2020/02/03:
-* Krabs now supports long mode. You can boot the 64bit kernel formatted in
-ELF64. 
-* Krabs still supports ELF32 on 32bit PCs. 
-* It does not need to rebuild Krabs every time, because it can tell executable
-file format. Once Krabs is built, it supports both 32-bit and 64-bit.
+* Krabs now supports long mode and protected mode. 
 
 2020/02/09:
 * Krabs can now let vmlinux uses initrd.
-* But, no testing has been done.
+
+2020/02/17:
+* kernel command line works fine. Below is an [example](docs/linux-image-setup-64.md):
+
+```
+$ ./tools/build.sh -k vmlinux -i initramfs.cpio.gz -c "clocksource=tsc" disk.img 
+```
+
+![boot-vmlinux-cmdline](docs/images/cmdline.gif)
+
 
 ## Getting Started
 To get started with Krabs, build it from source.
