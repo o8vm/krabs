@@ -18,13 +18,14 @@ Another feature is that in order to save space, use bzip2 compressed images inst
 * kernel command line and initrd works fine. Below is an [example](docs/linux-image-setup-64.md):
 
 ```shell
+$ ./tools/burger.sh -b
 $ ./tools/burger.sh -k vmlinux -i initramfs.cpio.gz -p "clocksource=tsc" disk.img 
 $ qemu-system-x86_64 --hda disk.img
 ```
 
 ![boot-vmlinux-cmdline](docs/images/cmdline.gif)
 
-2020/03/15
+2020/03/15:
 * [Krabs ran fine on the Thinkpad 600X!](https://twitter.com/ellbrid/status/1238857334392119298?s=20) Linux 5.4 is booted fine by Krabs. The kernel command line is also recognized.
 
 ## Getting Started
