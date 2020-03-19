@@ -173,7 +173,8 @@ Just execute the following command.
 ```shell
 $ pwd
 path/to/krabs
-$ ./tools/build.sh -k path/to/vmlinux -i path/to/initramfs.cpio.gz path/to/disk.img 
+$ ./tools/burger.sh -b
+$ ./tools/burger.sh -k path/to/vmlinux -i path/to/initramfs.cpio.gz -p "clocksource=tsc" path/to/disk.img 
 ```
 
 ## DiskSpace layout

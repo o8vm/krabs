@@ -1,6 +1,6 @@
 # Krabs: x86 bootloader
 Krabs is an experimental x86/x86_64 bootloader written in Rust.  
-Krabs can boot the ELF formatted kernel which compressed with bzip2. Krabs
+Krabs can boot the ELF formatted kernel (like vmlinux) which compressed with bzip2. Krabs
 decompresses the bz2 image and relocate the ELF image, then boot the kernel.
 
 Some of the source code uses libbzip2 C library for decompressing, but the rest
@@ -9,86 +9,69 @@ is completely Rust only.
 ## What is Krabs?
 Krabs is working on booting vmlinux and other kernels formatted in ELF on
 32-bit/64-bit PCs and is under the development.  
-Krabs also aims to support only the minimal Linux boot protocol. This allows you
-to specify the kernel command line and manipulate the behavior of the kernel at
-boot time.
-Another feature is that in order to save space, the ELF format kernel is
-compressed using bzip2 before use and uses libbzip2 library for decompressing.  
+Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. This allows you
+to specify the kernel command line and initrd/initramfs.  
+Another feature is that in order to save space, use bzip2 compressed images instead of raw ELF. Krabs uses libbzip2 library for decompressing it.
 
 ## News
-2020/02/03:
-* Krabs now supports long mode and protected mode. 
-
-2020/02/09:
-* Krabs can now let vmlinux uses initrd.
-
 2020/02/17:
-* kernel command line works fine. Below is an [example](docs/linux-image-setup-64.md):
+* kernel command line and initrd works fine. Below is an [example](docs/linux-image-setup-64.md):
 
-```
-$ ./tools/build.sh -k vmlinux -i initramfs.cpio.gz -c "clocksource=tsc" disk.img 
+```shell
+$ ./tools/burger.sh -k vmlinux -i initramfs.cpio.gz -p "clocksource=tsc" disk.img 
+$ qemu-system-x86_64 --hda disk.img
 ```
 
 ![boot-vmlinux-cmdline](docs/images/cmdline.gif)
 
+2020/03/15
+* [Krabs ran fine on the Thinkpad 600X!](https://twitter.com/ellbrid/status/1238857334392119298?s=20) Linux 5.4 is booted fine by Krabs. The kernel command line is also recognized.
 
 ## Getting Started
 To get started with Krabs, build it from source.
 
 ### Requirements
-You need a nightly Rust compiler and binutils. First you need to install the
-[cargo-xbuild](https://github.com/rust-osdev/cargo-xbuild) and
-[cargo-binutils](https://github.com/rust-embedded/cargo-binutils):
+You need a nightly Rust compiler,
+[cargo-xbuild](https://github.com/rust-osdev/cargo-xbuild) and [cargo-binutils](https://github.com/rust-embedded/cargo-binutils).  
+The `-c` option of `tools/burger.sh` checks for the exists of those required programs,
+and installs them that can be installed with cargo:
 
 ```shell
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-cargo install cargo-xbuild 
-cargo install cargo-binutils
-rustup component add llvm-tools-preview
-rustup component add rust-src
+$ cd /path/to/krabs
+$ ./tools/burger.sh -c
+== check commands ==
+    commands check passed
+
+== check components & install ==
+    xbuild installed
+    cargo-binutils installed
+    llvm-tools-preview installed
+    rust-src installed
 ```
 
-If you are using 64-bit Linux, you need to create a 32-bit multilib environment:
+If you are using 64-bit Linux, 32-bit multilib environment is needed:
 
-```
+```shell
 RHEL/CentOS:
 $ sudo yum install -y glibc.i686 glibc-devel.i686 libgcc.i686
 Ubuntu:
 $ sudo apt install gcc-multilib -y
 ```
 
-For testing, you also need the qemu and MBR disk image. Disk image should have a
-bootflaged partition.
-The following is an example on macOS.
+For testing, you also need the qemu and MBR disk image.   
+Disk image should have a bootflaged partition.
 
 ```shell
-brew install qemu
-qemu-img create disk.img 100M
-```
+$ qemu-img create disk.img 100M
+$ fdisk disk.img # create requiresd partitions
+$ fdisk -l disk.img
+...
+Disklabel type: dos
+Disk identifier: 0xef2cad51
 
-```shell
-$ fdisk -e disk.img
-The signature for this MBR is invalid.
-Would you like to initialize the partition table? [y] y
-fdisk:*1> edit 1   
-Partition id ('0' to disable)  [0 - FF]: [0] (? for help) 83
-Do you wish to edit in CHS mode? [n] n
-Partition offset [0 - 204800]: [63] 
-Partition size [1 - 204737]: [204737] 10000
-fdisk:*1> flag 1
-Partition 1 marked active.
-fdisk:*1> p
-Disk: disk.img geometry: 812/4/63 [204800 sectors]
-Offset: 0       Signature: 0xAA55
-         Starting       Ending
- #: id  cyl  hd sec -  cyl  hd sec [     start -       size]
-------------------------------------------------------------------------
-*1: 83    0   1   1 - 1023 254  63 [        63 -      10000] Linux files*
- 2: 00    0   0   0 -    0   0   0 [         0 -          0] unused      
- 3: 00    0   0   0 -    0   0   0 [         0 -          0] unused      
- 4: 00    0   0   0 -    0   0   0 [         0 -          0] unused      
-fdisk:*1> quit
-Writing current MBR to disk.
+Device     Boot Start    End Sectors  Size Id Type
+disk.img1  *     2048  10000    7953  3.9M 83 Linux
+disk.img2       10240 204799  194560   95M 83 Linux
 ```
 
 ### Build
@@ -96,8 +79,15 @@ You can build Krabs as follows:
 
 ```shell
 git clone https://github.com/ellbrid/krabs.git
-cd krabs
-./tools/build.sh -k [ELF_kernel_file] -i [initrd_file] -c "kernel command line" disk.img
+cd /path/to/krabs
+./tools/burger.sh -b
+```
+
+### Write
+Write out to the disk:
+
+```shell
+./tools/burger.sh -k [ELF_kernel_file] -i [initrd_file] -p "kernel command line" disk.img
 ```
 
 krabs will be installed into disk.img.   
@@ -132,12 +122,12 @@ Krabs's overall architecture is described in
 1. Supports legacy BIOS.
 2. Supported media are HDD and SSD which have MBR.
 3. Supports 32bit protected mode and 64bit long mode. 
-4. Supports minimal
-[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
-5. Supports OS kernel formatted in ELF32/ELF64.
+4. Supports OS kernel formatted in ELF32/ELF64.
+5. Supports minimal
+[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html). 
 6. To save space, OS kernels is compressd with bzip2 before use. When loading, Krabs
 unpacks it.
-7. An area of ​​122 bytes is reserved for the kernel command line.
+7. An area of ​​120 bytes is reserved for the kernel command line.
 Using this area, Krabs can transmit parameters to the OS, and can manipulate the
 behavior of the kernel at startup.
 8. Krabs can load modules such as initramsfs/initrd according to 

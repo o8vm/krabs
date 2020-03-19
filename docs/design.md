@@ -11,12 +11,12 @@ decompresses the bz2 image and relocate the ELF image, then boot the kernel.
 1. Supports legacy BIOS.
 2. Supported media are HDD and SSD which have MBR.
 3. Supports 32bit protected mode and 64bit long mode. 
-4. Supports minimal
-[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
-5. Supports OS kernel formatted in ELF32/ELF64.
+4. Supports OS kernel formatted in ELF32/ELF64.
+5. Supports minimal
+[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html). 
 6. To save space, OS kernels is compressd with bzip2 before use. When loading, Krabs
 unpacks it.
-7. An area of ​​122 bytes is reserved for the kernel command line.
+7. An area of ​​120 bytes is reserved for the kernel command line.
 Using this area, Krabs can transmit parameters to the OS, and can manipulate the
 behavior of the kernel at startup.
 8. Krabs can load modules such as initramsfs/initrd according to 
@@ -74,7 +74,7 @@ initrd file is loaded at `0x0560_0000`. The file is read from the disk using a
 appropriate address using `INT 15h` BIOS Function `0x87h`. When the loading of
 stage3, initrd and compressed kernel image is completed, jump to address
 `0x07C0:0x6000`.
-The kernel command line is held in the area of 122 bytes from address `0x280`.
+The kernel command line is held in the area of 120 bytes from address `0x200`.
 3. stage3 + stage4  
 Stage3 + Stage4 is linked with the libbzip2 decompression routine. Since an
 external C library is used, it is necessary to support zero clear of the .bss

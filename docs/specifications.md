@@ -24,7 +24,3 @@ execute/read permission, and `__BOOT_DS` has read/write permission.
 * Interrupt is disabled.
 * `%rsi` holds the base physical address(0x7C00) of the
 [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). 
-
-## Constraints
-* The size of ELF formatted kernel must be 85MiB or less.
-* The size of initrd/initramfs must be 32MiB or less.
