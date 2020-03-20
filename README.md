@@ -38,6 +38,7 @@ The `-c` option of `tools/burger.sh` checks for the exists of those required pro
 and installs them that can be installed with cargo:
 
 ```shell
+$ git clone https://github.com/ellbrid/krabs.git
 $ cd /path/to/krabs
 $ ./tools/burger.sh -c
 == check commands ==
@@ -79,7 +80,6 @@ disk.img2       10240 204799  194560   95M 83 Linux
 You can build Krabs as follows:
 
 ```shell
-git clone https://github.com/ellbrid/krabs.git
 cd /path/to/krabs
 ./tools/burger.sh -b
 ```
@@ -92,7 +92,7 @@ Write out to the disk:
 ```
 
 krabs will be installed into disk.img.   
-The `-k`, `-i`, and `-c` options are not required.
+The `-k`, `-i`, and `-p` options are not required.
 
 ### Run
 You can test it using QEMU:  
