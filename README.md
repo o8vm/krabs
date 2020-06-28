@@ -26,7 +26,7 @@ $ qemu-system-x86_64 --hda disk.img
 ![boot-vmlinux-cmdline](docs/images/cmdline.gif)
 
 2020/03/15:
-* [Krabs ran fine on the Thinkpad 600X!](https://twitter.com/ellbrid/status/1238857334392119298?s=20) Linux 5.4 is booted fine by Krabs. The kernel command line is also recognized.
+* [Krabs ran fine on the Thinkpad 600X!](https://twitter.com/o8_vm/status/1275473115980558336?s=20) Linux 5.4 is booted fine by Krabs. The kernel command line is also recognized.
 
 ## Getting Started
 To get started with Krabs, build it from source.
@@ -151,10 +151,9 @@ dual licensed as above, without any additional terms or conditions.
 ## Contanct
 You can get in touch with me in the following ways:
 
-* Contact me on my matrix chat: @ellbrid:matrix.org. 
-* Contact me on my [twitter](https://twitter.com/ellbrid).
+* Contact me on my [twitter](https://twitter.com/o8_vm).
 * Open a GitHub issue in this repository.
-* Email me at [ell@exoskeleton.dev](mailto:ell@exoskeleton.dev).
+* Email me at [o8@vmm.dev](mailto:o8@vmm.dev).
 
 _Note: I'm on a Japan time zone._  
 
