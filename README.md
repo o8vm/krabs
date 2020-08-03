@@ -1,3 +1,5 @@
+**This project is currently being rewritten. At the moment, attempts to build this project will fail.**
+
 # Krabs: x86 bootloader
 Krabs is an experimental x86/x86_64 bootloader written in Rust.  
 Krabs can boot the ELF formatted kernel (like vmlinux) which compressed with bzip2. Krabs
