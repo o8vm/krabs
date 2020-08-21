@@ -1,0 +1,31 @@
+{
+    "arch": "x86",
+    "cpu": "pentium",
+    "data-layout": "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128",
+    "dynamic-linking": false,
+    "executables": true,
+    "has-elf-tls": false,
+    "has-rpath": true,
+    "is-builtin": false,
+    "linker-flavor": "ld.lld",
+    "linker": "rust-lld",
+    "llvm-target": "i586-unknown-none-code16",
+    "max-atomic-width": 64,
+    "os": "none",
+    "relocation-model": "static",
+    "position-independent-executables": false,
+    "relro-level": "off",
+    "stack-probes": true,
+    "target-c-int-width": "32",
+    "target-endian": "little",
+    "target-pointer-width": "32",
+    "vendor": "unknown",
+    "panic-strategy": "abort",
+    "disable-redzone": true,
+    "features": "-mmx,-sse,+soft-float",
+    "pre-link-args": {
+		"ld.lld": [
+			"--script=src/stage_1st/stage_1st.ld"
+		]
+	}
+}

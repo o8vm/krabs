@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "src/stage_1st",
+    "src/plankton",
+]
+exclude = [
+    "src/stage_2nd",
+    "src/stage_3rd",
+    "src/stage_4th",
+]
+
+[profile.release]
+opt-level = "z"
