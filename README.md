@@ -18,6 +18,8 @@ other features:
 * This branch is currently under development. KRaBs has not be able boot Linux at this time.
 * Currently, KRaBs can only load CONFIG.TXT from the FAT32 EFI System Partition.
 
+![sample](./docs/images/config.png)
+
 ## Getting Started
 To get started with KRaBs, build it from source.
 
