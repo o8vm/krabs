@@ -19,7 +19,7 @@ fn main() {
     let target_dir = current_dir.join(target_dir_rel);
 
     // build stage 1st
-    let stage_1st_dir = manifest_dir.join("src/bios/src/stage_1st");
+    let stage_1st_dir = manifest_dir.join("src/bios/stage_1st");
     let stage_1st_triple = stage_1st_dir.join("i586-stage_1st.json");
     build_subproject(
         &stage_1st_dir,
@@ -30,7 +30,7 @@ fn main() {
     );
 
     // build stage_2nd
-    let stage_2nd_dir = manifest_dir.join("src/bios/src/stage_2nd");
+    let stage_2nd_dir = manifest_dir.join("src/bios/stage_2nd");
     let stage_2nd_triple = stage_2nd_dir.join("i586-stage_2nd.json");
     build_subproject(
         &stage_2nd_dir,
@@ -41,7 +41,7 @@ fn main() {
     );
 
     // build stage_3rd
-    let stage_3rd_dir = manifest_dir.join("src/bios/src/stage_3rd");
+    let stage_3rd_dir = manifest_dir.join("src/bios/stage_3rd");
     let stage_3rd_triple = stage_3rd_dir.join("i586-stage_3rd.json");
     build_subproject(
         &stage_3rd_dir,
@@ -52,7 +52,7 @@ fn main() {
     );
 
     // build stage_4th
-    let stage_4th_dir = manifest_dir.join("src/bios/src/stage_4th");
+    let stage_4th_dir = manifest_dir.join("src/bios/stage_4th");
     let stage_4th_triple = stage_4th_dir.join("i586-stage_4th.json");
     build_subproject(
         &stage_4th_dir,

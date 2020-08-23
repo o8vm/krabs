@@ -25,7 +25,7 @@
     "features": "-mmx,-sse,+soft-float",
     "pre-link-args": {
 		"ld.lld": [
-			"--script=src/stage_1st/stage_1st.ld"
+			"--script=stage_1st.ld"
 		]
 	}
 }

@@ -1,5 +1,5 @@
 [package]
-name = "stage_3rd"
+name = "stage_2nd"
 version = "0.1.0"
 authors = ["Hayato Ohhashi <o8@vmm.dev>"]
 edition = "2018"
@@ -9,3 +9,6 @@ edition = "2018"
 [dependencies]
 plankton = { path = "../plankton" }
 rlibc = "1.0.0"
+
+[profile.release]
+opt-level = "z"
