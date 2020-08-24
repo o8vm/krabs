@@ -260,6 +260,8 @@ fn run_emu(disk_path: &Path) -> Result<(), Box<dyn Error>> {
     let mut qemu = Command::new("qemu-system-x86_64")
         .arg("--hda")
         .arg(disk_path)
+        .arg("-m")
+        .arg("1G")
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()?;
