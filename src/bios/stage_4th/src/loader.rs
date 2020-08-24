@@ -133,7 +133,7 @@ where
     let mut initrd_size = 0;
 
     // loading kernel img
-    print!("  Loading {}", config.kernel);
+    print!("  Loading {}...", config.kernel);
     let kernel_img = root.open_file(config.kernel).unwrap();
     let mut img_region = MemoryRegion::new(ELF_START as u64, kernel_img.len() as u64);
     let mut img = img_region.as_mut_slice::<u8>(0, img_region.len());
@@ -142,7 +142,7 @@ where
 
     // loading initrd if config exists
     if let Some(initrd) = config.initrd {
-        print!("  Loading {}", initrd);
+        print!("  Loading {}...", initrd);
         let initrd_img = root.open_file(initrd).unwrap();
         let mut rd_region = MemoryRegion::new(INITRD_START as u64, initrd_img.len() as u64);
         let mut rd = rd_region.as_mut_slice::<u8>(0, rd_region.len());
@@ -165,15 +165,11 @@ where
 }
 
 fn setup_cmdline(cmdlin: &str) {
-    use alloc::vec::Vec;
-
-    // prepare cstr
-    let mut bytes = cmdlin.bytes().collect::<Vec<u8>>();
-    bytes.push(b'\0');
-
-    let mut cmdline_region = MemoryRegion::new(CMD_LINE_ADDR as u64, bytes.len() as u64);
-    let cmdline = cmdline_region.as_mut_slice::<u8>(0, cmdline_region.len());
-    cmdline.copy_from_slice(&bytes);
+    let bytes = cmdlin.as_bytes();
+    let mut cmdline_region = MemoryRegion::new(CMD_LINE_ADDR as u64, bytes.len() as u64 + 1);
+    let cmdline = cmdline_region.as_mut_slice::<u8>(0, bytes.len() as u64);
+    cmdline.copy_from_slice(bytes);
+    cmdline_region.write_u8(bytes.len() as u64, b'\0');
 }
 
 fn setup_zero_page(kernel_size: u32, initrd_size: u32) {

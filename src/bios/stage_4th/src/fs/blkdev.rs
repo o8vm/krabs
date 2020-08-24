@@ -60,7 +60,6 @@ pub fn read(buf: &mut [u8], offset: usize) -> Result<(), BIOError> {
         )?;
         buff_offset += copy_bytes(buf, load_sectors as usize * 512, buff_offset, sector_offset);
         num_sectors -= load_sectors as usize;
-        print!(".");
     }
     Ok(())
 }

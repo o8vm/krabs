@@ -21,7 +21,7 @@ fn stage4() -> ! {
     let file_name = "CONFIG.TXT";
 
     // Mount FileSystem.
-    print!("  Mounting FAT32 EFI System Partition");
+    print!("  Mounting FAT32 EFI System Partition...");
     let partition = match GPT::new().get_efi_system_partition() {
         Some(partition) => partition,
         None => panic!("None"),
@@ -31,7 +31,7 @@ fn stage4() -> ! {
     println!(" done!");
 
     // Read CONFIG File
-    print!("  Reading {}", file_name);
+    print!("  Reading {}...", file_name);
     let config_txt = root.open_file(file_name).unwrap();
     let mut buf = vec![0u8; config_txt.len()];
     config_txt.read(&mut buf).unwrap();
