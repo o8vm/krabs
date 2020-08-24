@@ -33,6 +33,10 @@ impl MemoryRegion {
     pub fn new(base: u64, length: u64) -> Self {
         Self { base, length }
     }
+    
+    pub fn len(&self) -> u64 {
+        self.length
+    }
 
     pub fn from_slice<T>(data: &[T]) -> Self {
         Self {

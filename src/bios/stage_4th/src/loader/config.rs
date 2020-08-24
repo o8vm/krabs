@@ -10,7 +10,7 @@ impl<'a> Config<'a> {
         let kernel = get_item(contents, "main.kernel");
         let initrd = get_item(contents, "main.initrd");
         let cmdlin = get_item(contents, "main.cmdlin");
-        
+
         if let Some(kernel) = kernel {
             Ok(Self {
                 kernel,
@@ -28,7 +28,7 @@ fn get_item<'a, 'b>(contents: &'a str, pat: &'b str) -> Option<&'a str> {
     for line in contents.lines() {
         if line.starts_with(pat) {
             res = Some(line.split_at(pat.len() + 1).1);
-            break
+            break;
         }
     }
     res

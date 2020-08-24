@@ -6,9 +6,11 @@ extern crate rlibc;
 
 #[macro_use]
 use alloc::vec;
-use stage_4th::fs::{fat32::Volume, gpt::GPT};
+use stage_4th::fs::{fat32::FileSystem, gpt::GPT};
 use stage_4th::{
-    clear_bss, loader::config::Config, loader::load_elf, loader::GuestAddress, print, println, svm,
+    clear_bss,
+    loader::{config::Config, load_elf, load_items, GuestAddress},
+    print, println, svm,
 };
 
 #[link_section = ".first"]
@@ -16,34 +18,38 @@ use stage_4th::{
 fn stage4() -> ! {
     clear_bss();
     println!("Stage4: ");
-    print!("  Searching EFI System Partition... ");
-    let table = GPT::new();
-    let partition = match table.get_efi_system_partition() {
-        Some(partition) => {
-            println!("found!");
-            partition
-        }
+    let file_name = "CONFIG.TXT";
+
+    // Mount FileSystem.
+    print!("  Mounting FAT32 EFI System Partition");
+    let partition = match GPT::new().get_efi_system_partition() {
+        Some(partition) => partition,
         None => panic!("None"),
     };
-    let fs = Volume::new(partition);
+    let fs = FileSystem::new(partition);
     let root = fs.root_dir();
+    println!(" done!");
 
-    println!("  Reading CONFIG.TXT");
-    let file = root.load_file("CONFIG.TXT").unwrap();
-    let mut buf = vec![0u8; file.length];
-    file.read(&mut buf).unwrap();
-    //print!("{}", core::str::from_utf8(&buf).unwrap());
+    // Read CONFIG File
+    print!("  Reading {}", file_name);
+    let config_txt = root.open_file(file_name).unwrap();
+    let mut buf = vec![0u8; config_txt.len()];
+    config_txt.read(&mut buf).unwrap();
     let config = Config::new(core::str::from_utf8(&buf).unwrap()).unwrap();
-    print!("{:?}", config);
-    //println!("  Decompressing kernel ...");
-    //decompress_kernel(kernel_size).unwrap();
-    loop {}
-    /*
-    let entry_addr = load_elf(0)
+    println!(" done!");
+
+    // Load items
+    let kernel_size = load_items(root, config).unwrap();
+
+    // Relocating ELF formatted Kernel
+    print!("  Relocating kernel ");
+    let entry_addr = load_elf(kernel_size)
         .map_err(|err| err.stringify())
         .unwrap();
+
+    // Excute
     match entry_addr {
         GuestAddress::Addr32(entry_addr) => svm::pm::start_kernel(entry_addr),
         GuestAddress::Addr64(entry_addr) => svm::lm::start_kernel(entry_addr),
-    }*/
+    }
 }
