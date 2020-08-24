@@ -1,5 +1,6 @@
 use super::{file::File, read_le_u32, BIOSParameterBlock, BUFFER_SIZE};
 use crate::fs::blkdev::BlockDevice;
+use core::fmt::Debug;
 
 #[derive(Debug, Copy, Clone)]
 pub enum DirError {
@@ -19,9 +20,9 @@ enum NameType {
 pub struct Dir<T>
 where
     T: BlockDevice + Clone + Copy,
-    <T as BlockDevice>::Error: core::fmt::Debug,
+    <T as BlockDevice>::Error: Debug,
 {
-    pub base: T,
+    pub partition: T,
     pub bpb: BIOSParameterBlock,
     pub dir_name: [u8; 11],
     pub dir_cluster: u32,
@@ -33,13 +34,13 @@ where
     T: BlockDevice + Clone + Copy,
     <T as BlockDevice>::Error: core::fmt::Debug,
 {
-    pub fn into_dir(&self, dir: &str) -> Result<Dir<T>, DirError> {
+    pub fn cd(&self, dir: &str) -> Result<Dir<T>, DirError> {
         match self.exists(dir) {
             Ok(buf) => Ok(self.get_dir(&buf.0)),
             Err(_) => Err(DirError::NoMatchDir),
         }
     }
-    pub fn load_file(&self, file: &str) -> Result<File<T>, DirError> {
+    pub fn open_file(&self, file: &str) -> Result<File<T>, DirError> {
         match self.exists(file) {
             Ok(buf) => Ok(self.get_file(&buf.0, buf.1)),
             Err(_) => Err(DirError::NoMatchFile),
@@ -72,7 +73,7 @@ where
 
         for i in (0..).step_by(32) {
             if i % BUFFER_SIZE == 0 {
-                self.base
+                self.partition
                     .read(
                         &mut buf,
                         self.bpb.offset(self.dir_cluster) as usize + offset_count * bps,
@@ -169,7 +170,7 @@ where
         dir_name.copy_from_slice(&buf[0x00..0x0B]);
 
         Dir::<T> {
-            base: self.base,
+            partition: self.partition,
             bpb: self.bpb,
             dir_name,
             dir_cluster: ((buf[0x15] as u32) << 24)
@@ -211,7 +212,7 @@ where
         len.copy_from_slice(&buf[0x1C..0x20]);
 
         File::<T> {
-            base: self.base,
+            partition: self.partition,
             bpb: self.bpb,
             dir_cluster: self.dir_cluster,
             offset,

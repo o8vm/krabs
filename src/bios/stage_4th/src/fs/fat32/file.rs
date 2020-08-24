@@ -1,5 +1,6 @@
 use super::BIOSParameterBlock;
 use crate::fs::blkdev::BlockDevice;
+use core::fmt::Debug;
 
 #[derive(Debug, Copy, Clone)]
 pub enum FileError {
@@ -11,9 +12,9 @@ pub enum FileError {
 pub struct File<T>
 where
     T: BlockDevice + Clone + Copy,
-    <T as BlockDevice>::Error: core::fmt::Debug,
+    <T as BlockDevice>::Error: Debug,
 {
-    pub base: T,
+    pub partition: T,
     pub bpb: BIOSParameterBlock,
     pub dir_cluster: u32,
     pub offset: u32,
@@ -26,8 +27,11 @@ where
 impl<T> File<T>
 where
     T: BlockDevice + Clone + Copy,
-    <T as BlockDevice>::Error: core::fmt::Debug,
+    <T as BlockDevice>::Error: Debug,
 {
+    pub fn len(&self) -> usize {
+        self.length
+    }
     pub fn read(&self, buf: &mut [u8]) -> Result<usize, FileError> {
         if buf.len() < self.length as usize {
             return Err(FileError::BufTooSmall);
@@ -48,7 +52,7 @@ where
         let bytes = self.length as usize % bps;
 
         for _ in 0..clusters {
-            self.base
+            self.partition
                 .read(
                     &mut buf[start_at..start_at + spc * bps],
                     self.bpb.offset(loc),
@@ -59,7 +63,7 @@ where
             start_at += spc * bps;
         }
         if sectors > 0 || bytes > 0 {
-            self.base
+            self.partition
                 .read(
                     &mut buf[start_at..start_at + sectors * bps + bytes],
                     self.bpb.offset(loc),
@@ -73,7 +77,7 @@ where
         let offset = loc as usize * 4;
         let mut buf = [0; 4];
 
-        self.base.read(&mut buf, fat_addr + offset).unwrap();
+        self.partition.read(&mut buf, fat_addr + offset).unwrap();
         u32::from_le_bytes(buf)
     }
 }

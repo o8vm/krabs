@@ -1,5 +1,6 @@
 use crate::fs::blkdev::BlockDevice;
 use core::convert::TryInto;
+use core::fmt::Debug;
 
 pub mod dir;
 pub mod file;
@@ -34,23 +35,23 @@ impl BIOSParameterBlock {
     }
 }
 
-pub struct Volume<T>
+pub struct FileSystem<T>
 where
     T: BlockDevice + Clone + Copy,
 {
-    base: T,
+    partition: T,
     bpb: BIOSParameterBlock,
 }
 
-impl<T> Volume<T>
+impl<T> FileSystem<T>
 where
     T: BlockDevice + Clone + Copy,
-    <T as BlockDevice>::Error: core::fmt::Debug,
+    <T as BlockDevice>::Error: Debug,
 {
-    // get volume
-    pub fn new(base: T) -> Volume<T> {
+    // get FAT32 FileSystem
+    pub fn new(partition: T) -> Self {
         let mut buf = [0; BUFFER_SIZE];
-        base.read(&mut buf, 0).unwrap();
+        partition.read(&mut buf, 0).unwrap();
 
         let mut volume_label = [0; 11];
         volume_label.copy_from_slice(&buf[0x47..0x52]);
@@ -66,8 +67,8 @@ where
             );
         }
 
-        Volume::<T> {
-            base,
+        Self {
+            partition,
             bpb: BIOSParameterBlock {
                 byte_per_sector: bps,
                 sector_per_cluster: buf[0x0D],
@@ -86,7 +87,7 @@ where
     // into root_dir
     pub fn root_dir(&self) -> dir::Dir<T> {
         dir::Dir::<T> {
-            base: self.base,
+            partition: self.partition,
             bpb: self.bpb,
             dir_name: [0; 11],
             dir_cluster: self.bpb.root_cluster,
