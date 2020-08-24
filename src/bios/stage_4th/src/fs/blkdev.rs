@@ -1,4 +1,3 @@
-use crate::print;
 use plankton::{
     dev::MAX_SECTOR,
     layout::{INIT_SEG, TRACK_BUFFER},
