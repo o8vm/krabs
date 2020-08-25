@@ -1,7 +1,7 @@
 # KRaBs: Kernel Reader and Booters
 KRaBs is an x86/x86_64 chain loader written in pure Rust.  
 
-## What is Krabs?
+## What is KRaBs?
 KRaBs is working on booting vmlinux and other kernels formatted in ELF on
 32-bit/64-bit PCs and is under the development. Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. 
 This allows you to specify the kernel command line and initrd/initramfs.  
@@ -12,7 +12,7 @@ Other features:
 * You can configure KRsBs by CONFIG.TXT on ESP.
 
 ## News
-* **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**
+* 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**. see [details](docs/linux-image-setup-64.md)
 
 ![sample](./docs/images/2020demo.gif)
 
@@ -97,7 +97,6 @@ Examples for x86-64 Linux is described in
 
 ## Contributing
 KRaBs welcomes all contributions.
-
 To contribute to KRaBs, check out the [getting started guide](#getting-started)
 and then the KRaBs [contribution guidelines](CONTRIBUTING.md).
 
