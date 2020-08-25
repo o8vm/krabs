@@ -10,7 +10,6 @@ pub mod zero;
 pub fn setup() {
     zero::clear_bss();
     zero::Pages::SecondHalf.clear();
-    //    cmd::set_cmdline(cmd_line);
     zero::Pages::FirstHalf.clear();
     msz::set_mem_size();
     kbd::set_keyboard();
