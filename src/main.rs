@@ -120,7 +120,7 @@ impl Builds {
 
 pub fn diskimg_check(path: &Path) -> Result<(u64, u64), Box<dyn Error>> {
     println!("Checking partitions...");
-    let mut result = (None, None, None);
+    let mut result = (None, None, None, None);
     if !path.exists() {
         return Err(SomeError::NoDiskImage.into());
     }
@@ -135,16 +135,18 @@ pub fn diskimg_check(path: &Path) -> Result<(u64, u64), Box<dyn Error>> {
         if value.part_type_guid.guid.as_bytes() == "C12A7328-F81F-11D2-BA4B-00A0C93EC93B".as_bytes()
         {
             result.2 = Some(value.first_lba);
+            result.3 = Some(value.last_lba);
         }
     }
     let result = (
         result.0.ok_or(SomeError::NoBIOSBootPartition)?,
         result.1.ok_or(SomeError::NoBIOSBootPartition)?,
         result.2.ok_or(SomeError::NoEFISystemPartition)?,
+        result.3.ok_or(SomeError::NoEFISystemPartition)?,
     );
     println!(
-        "    BIOS boot partition: start = {}, end = {}\n    EFI System Partition: start = {}",
-        result.0, result.1, result.2
+        "    BIOS boot partition: start = {}, end = {}\n    EFI System Partition: start = {}, end = {}",
+        result.0, result.1, result.2, result.3
     );
     Ok((result.0, result.1))
 }
