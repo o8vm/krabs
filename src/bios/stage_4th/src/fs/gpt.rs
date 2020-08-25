@@ -1,4 +1,4 @@
-//use super::{print, println};
+use crate::{print, println};
 use crate::fs::blkdev::{read, BIOError, BlockDevice};
 pub struct GPT {
     data: [u8; 1280], // 10 Partitions
@@ -58,7 +58,6 @@ impl GPT {
                 return Some(Partition {
                     start_lba: entry.starting_lba(),
                     length: entry.partition_length(),
-                    relative_pos: 0,
                 });
             }
         }
@@ -70,19 +69,19 @@ impl GPT {
 pub struct Partition {
     pub start_lba: u32,
     pub length: usize,
-    pub relative_pos: usize,
 }
 
 impl BlockDevice for Partition {
     type Error = BIOError;
     fn read(&self, buf: &mut [u8], offset: usize) -> Result<(), Self::Error> {
-        let rel_offset = self.relative_pos + offset;
-        let load_sectors = (buf.len() + rel_offset + 512 - 1) / 512;
-        let real_offset = (self.start_lba as usize * 512) + rel_offset;
-        if load_sectors < self.length {
+        let load_sectors = (buf.len() + offset + 512 - 1) / 512;    // sectors
+        let real_offset = (self.start_lba as usize * 512) + offset; // bytes
+        if load_sectors <= self.length {
             read(buf, real_offset)?;
             Ok(())
         } else {
+            println!("offset = {}", offset);
+            println!("load sectors = {}, length = {}", load_sectors, self.length);
             Err(BIOError::IOError)
         }
     }
