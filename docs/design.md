@@ -27,6 +27,14 @@ KRaBs supports only the minimal
 So your OS needs to use this as well.  
 Read more about it in [the Specification document](specifications.md).
 
+### CONFIG.TXT formats
+simple matrix-oriented text file like this:
+```
+main.kernel sample-kernel
+main.initrd sample-initrd
+main.cmdlin sample command line clocksource=tsc net.ifnames=0
+```
+
 ## How KRaBs works
 The minimum requirement for booting an ELF-formatted kernel is that the kernel
 image must be parsed and loaded to the address specified in the program header.

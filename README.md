@@ -2,14 +2,12 @@
 KRaBs is an x86/x86_64 chain loader written in pure Rust.  
 
 ## What is KRaBs?
-KRaBs is working on booting vmlinux and other kernels formatted in ELF on
-32-bit/64-bit PCs and is under the development. Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. 
-This allows you to specify the kernel command line and initrd/initramfs.  
+KRaBs is working on booting vmlinux and other kernels formatted in ELF on 32-bit/64-bit PCs and is under the development. Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. This allows you to use the kernel command line and initrd/initramfs.  
 
 Other features:
-* Supports GPT.
-* Supports FAT32 EFI System Partition(ESP).
-* You can configure KRaBs by CONFIG.TXT on ESP.
+* Supports GPT and FAT32 File System on EFI System Partition(ESP).
+* You can configure KRaBs's boot option by CONFIG.TXT on FAT32.
+* CONFIG.TXT is a simple matrix-oriented text file. See [CONFIG.TXT formats](#config.txt-formats).
 
 ## News
 * 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**. see [details](docs/linux-image-setup-64.md)
@@ -23,9 +21,9 @@ To get started with KRaBs, build it from source.
 1. Needs a nightly Rust compiler.  
 2. If using 64-bit Linux, 32-bit multilib environment is needed.
 3. Needs GPTed disk image that has BIOS Boot Partition and EFI System Partition.
-4. Needs CONFIG.TXT, kernel image and initrd in FAT32 EFI System Partition.
+4. Needs CONFIG.TXT, kernel image and initrd in FAT32 FileSystem on EFI System Partition.
 
-Prepare 32-bit multilib environment:
+#### Prepare 32-bit multilib environment:
 ```shell
 RHEL/CentOS:
 $ sudo yum install -y glibc.i686 glibc-devel.i686 libgcc.i686
@@ -33,7 +31,7 @@ Ubuntu:
 $ sudo apt install gcc-multilib -y
 ```
 
-Example of GPT disk image:
+#### Example of GPT disk image:
 ```shell
 $ gdisk -l disk.img 
 ...
@@ -56,19 +54,22 @@ $ sudo mkfs.fat -F 32 /dev/mapper/loop0p2
 $ sudo mkfs.ext4 /dev/mapper/loop0p3
 ```
 
-Prepare CONFIG.TXT, kernel, initrd:
+#### Prepare CONFIG.TXT, kernel, initrd:
 ```shell
 $ sudo mount /dev/mapper/loop0p2 /mnt
 $ ls /mnt
 CONFIG.TXT  initramfs.cpio.gz vmlinux-5.8.3
-$ cat /mnt/CONFIG.TXT 
+```
+
+#### CONFIG.TXT format
+simple matrix-oriented text file
+```shell
 main.kernel vmlinux-5.8.3
 main.initrd initramfs.cpio.gz
-main.cmdlin clocksource=tsc
+main.cmdlin clocksource=tsc net.ifnames=0
 ```
 
 ### Build
-All you need to build KRaBs is cargo!  
 You can build KRaBs as follows:
 
 ```shell
