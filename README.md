@@ -9,7 +9,7 @@ This allows you to specify the kernel command line and initrd/initramfs.
 Other features:
 * Supports GPT.
 * Supports FAT32 EFI System Partition(ESP).
-* You can configure KRsBs by CONFIG.TXT on ESP.
+* You can configure KRaBs by CONFIG.TXT on ESP.
 
 ## News
 * 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**. see [details](docs/linux-image-setup-64.md)
