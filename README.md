@@ -22,6 +22,7 @@ To get started with KRaBs, build it from source.
 2. If using 64-bit Linux, 32-bit multilib environment is needed.
 3. Needs GPTed disk image that has BIOS Boot Partition and EFI System Partition.
 4. Needs CONFIG.TXT, kernel image and initrd in FAT32 FileSystem on EFI System Partition.
+5. llvm-objcopy. please install it before build.
 
 #### Prepare 32-bit multilib environment:
 ```shell
