@@ -113,7 +113,8 @@ KRaBs's overall architecture is described in
 4. Supports OS kernel formatted in ELF32/ELF64.
 5. Supports minimal
 [x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html). 
-6. KRaBs interprets the FAT32 file system and is set by CONFIG.TXT on the that file system.
+6. KRaBs interprets the FAT32 file system.
+7. KRaBs's boot optuon is configureset by CONFIG.TXT on the FAT32 file system.
 7. KRaBs can load modules such as initramsfs/initrd according to linux boot protocol.
 8. KRaBs can transmit kernel command line to the kernel according to linux boot protocol.
 
