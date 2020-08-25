@@ -1,32 +1,29 @@
 # KRaBs: Kernel Reader and Booters
-KRaBs is an x86/x86_64 chain loader written in Rust.  
+KRaBs is an x86/x86_64 chain loader written in pure Rust.  
 
 ## What is Krabs?
 KRaBs is working on booting vmlinux and other kernels formatted in ELF on
-32-bit/64-bit PCs and is under the development.  
-Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. This allows you
-to specify the kernel command line and initrd/initramfs.  
+32-bit/64-bit PCs and is under the development. Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. 
+This allows you to specify the kernel command line and initrd/initramfs.  
 
-other features:
-* To save space, KRaBs use gzip compressed images instead of raw ELF.
-* Supports GPT instead of MBR partition table.
-* Supports FAT32 EFI System Partition.
-* KRaBs uses BIOS Boot Partition.
-* 100% Rust
+Other features:
+* Supports GPT.
+* Supports FAT32 EFI System Partition(ESP).
+* You can configure KRsBs by CONFIG.TXT on ESP.
 
 ## News
-* This branch is currently under development. KRaBs has not be able boot Linux at this time.
-* Currently, KRaBs can only load CONFIG.TXT from the FAT32 EFI System Partition.
+* **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**
 
-![sample](./docs/images/config.png)
+![sample](./docs/images/2020demo.gif)
 
 ## Getting Started
 To get started with KRaBs, build it from source.
 
 ### Requirements
-1. You need a nightly Rust compiler.  
-2. If you are using 64-bit Linux, 32-bit multilib environment is needed.
-3. GPT disk image that has BIOS Boot Partition and EFI System Partition.
+1. Needs a nightly Rust compiler.  
+2. If using 64-bit Linux, 32-bit multilib environment is needed.
+3. Needs GPTed disk image that has BIOS Boot Partition and EFI System Partition.
+4. Needs CONFIG.TXT, kernel image and initrd in FAT32 EFI System Partition.
 
 Prepare 32-bit multilib environment:
 ```shell
@@ -54,9 +51,24 @@ Number  Start (sector)    End (sector)  Size       Code  Name
    1            2048            4095   1024.0 KiB  EF02  BIOS boot partition
    2            4096          106495   50.0 MiB    EF00  EFI system partition
    3          106496          204766   48.0 MiB    8300  Linux filesystem
+$ sudo kpartx -av disk.img
+$ sudo mkfs.fat -F 32 /dev/mapper/loop0p2
+$ sudo mkfs.ext4 /dev/mapper/loop0p3
+```
+
+Prepare CONFIG.TXT, kernel, initrd:
+```shell
+$ sudo mount /dev/mapper/loop0p2 /mnt
+$ ls /mnt
+CONFIG.TXT  initramfs.cpio.gz vmlinux-5.8.3
+$ cat /mnt/CONFIG.TXT 
+main.kernel vmlinux-5.8.3
+main.initrd initramfs.cpio.gz
+main.cmdlin clocksource=tsc
 ```
 
 ### Build
+All you need to build KRaBs is cargo!  
 You can build KRaBs as follows:
 
 ```shell
@@ -72,23 +84,27 @@ cargo run -- -w disk.img
 ```
 
 ### Run
-You can test it using QEMU:  
+First, install qemu-system-x86.  
+Then, you can test it using QEMU:  
 
 ```shell
 cargo run -- -e disk.img
 ```
 
 ## Examples 
-TBD
+Examples for x86-64 Linux is described in
+[the docs of 'Creating Custom Linux Images and Booting'](docs/linux-image-setup-64.md).
 
 ## Contributing
-Krabs welcomes all contributions.
+KRaBs welcomes all contributions.
 
-To contribute to Krabs, check out the [getting started guide](#getting-started)
-and then the Krabs [contribution guidelines](CONTRIBUTING.md).
+To contribute to KRaBs, check out the [getting started guide](#getting-started)
+and then the KRaBs [contribution guidelines](CONTRIBUTING.md).
 
 ## Design
-TBD
+KRaBs's overall architecture is described in
+[the design document](docs/design.md) and
+[the specification document](docs/specifications.md).
 
 ## Features
 1. Supports legacy BIOS.
@@ -97,10 +113,13 @@ TBD
 4. Supports OS kernel formatted in ELF32/ELF64.
 5. Supports minimal
 [x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html). 
-6. To save space, OS kernels is compressd with gzip before use. When loading, KRaBs
-unpacks it.
-7. Krabs can load modules such as initramsfs/initrd according to 
-[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
+6. KRaBs interprets the FAT32 file system and is set by CONFIG.TXT on the that file system.
+7. KRaBs can load modules such as initramsfs/initrd according to linux boot protocol.
+8. KRaBs can transmit kernel command line to the kernel according to linux boot protocol.
+
+## ToDO
+1. support gziped kernel.
+2. support recovery mode.
 
 ## License
 This project is licensed under either of

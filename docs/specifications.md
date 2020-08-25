@@ -1,7 +1,7 @@
 # Specifications
-Krabs supports only the minimal
+KRaBs supports only the minimal
 [x86 Linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).  
-Before attempting to use Krabs for loading and booting your OS, take action as
+Before attempting to use KRaBs for loading and booting your OS, take action as
 needed to meet the following requirements:
 
 ## 32bit boot protocol 
@@ -12,7 +12,7 @@ execute/read permission, and `__BOOT_DS` has read/write permission.
 * `CS` is `__BOOT_CS` and `DS`, `ES`, `SS` is `__BOOT_DS`.
 * Interrupt is disabled.
 * `%ebp`, `%edi` and `%ebx` is zero.
-* `%esi` holds the base physical address(0x7C00) of the
+* `%esi` holds the base physical address(`0x7C00`) of the
 [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). 
 
 ## 64bit boot protocol
@@ -22,5 +22,5 @@ execute/read permission, and `__BOOT_DS` has read/write permission.
 execute/read permission, and `__BOOT_DS` has read/write permission.
 * `CS` is `__BOOT_CS` and `DS`, `ES`, `SS` is  `__BOOT_DS`.
 * Interrupt is disabled.
-* `%rsi` holds the base physical address(0x7C00) of the
+* `%rsi` holds the base physical address(`0x7C00`) of the
 [struct boot_params](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/bootparam.h#L175). 

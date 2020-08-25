@@ -1,36 +1,33 @@
-# Krabs Design
+# KRaBs Design
 
 ## Scope
 
-### What is Krabs
-Krabs is an experimental x86 bootloader written in Rust.  
-Krabs can boot the ELF formatted kernel which compressed with bzip2. Krabs
-decompresses the bz2 image and relocate the ELF image, then boot the kernel.
+### What is KRaBs
+KRaBs is working on booting vmlinux and other kernels formatted in ELF on
+32-bit/64-bit PCs and is under the development. Krabs also aims to support only the minimal Linux x86/x86_64 boot protocol. 
+This allows you to specify the kernel command line and initrd/initramfs.  
 
 ### Features
 1. Supports legacy BIOS.
-2. Supported media are HDD and SSD which have MBR.
-3. Supports 32bit protected mode and 64bit long mode. 
-4. Supports OS kernel formatted in ELF32/ELF64.
-5. Supports minimal
+2. Supported media are HDD and SSD which have GPT.
+3. GPT must have BIOS Boot Partition and EFI System Partition.
+4. Supports 32bit protected mode and 64bit long mode. 
+5. Supports OS kernel formatted in ELF32/ELF64.
+6. Supports minimal
 [x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html). 
-6. To save space, OS kernels is compressd with bzip2 before use. When loading, Krabs
-unpacks it.
-7. An area of ​​120 bytes is reserved for the kernel command line.
-Using this area, Krabs can transmit parameters to the OS, and can manipulate the
-behavior of the kernel at startup.
-8. Krabs can load modules such as initramsfs/initrd according to 
-[x86/x86_64 linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
+7. KRaBs interprets the FAT32 file system and is set by CONFIG.TXT on the that file system.
+8. KRaBs can load modules such as initramsfs/initrd according to linux boot protocol.
+9. KRaBs can transmit kernel command line to the kernel according to linux boot protocol.
 
 ### Specifications
-Krabs's technical specifications are available in
+KRaBs's technical specifications are available in
 [the Specifications document](specifications.md).
-Krabs supports only the minimal
+KRaBs supports only the minimal
 [x86 Linux boot protocol](https://www.kernel.org/doc/html/latest/x86/boot.html).
 So your OS needs to use this as well.  
 Read more about it in [the Specification document](specifications.md).
 
-## How Krabs works
+## How KRaBs works
 The minimum requirement for booting an ELF-formatted kernel is that the kernel
 image must be parsed and loaded to the address specified in the program header.
 In this project, the following four types of initialization processing are
@@ -50,48 +47,23 @@ space.
 * Get system memory by BIOS call.
 
 **Information transmission to the kernel:**
+* KRaBs mount the FAT32 EFI System Partition and Reading the CONFIG.TXT.
 * Setting [Zero Page](https://www.kernel.org/doc/html/latest/x86/zero-page.html)
 of kernel parameters and transmit it to the OS.
 
-**Relocate the kernel:**
-* The target is an ELF file, but Krabs uses it after bzip2 compression.
-Therefore, two-stage relocation is needed. One is bzip2 decompression and the
-other is ELF relocation.
+**Load items and Relocate the kernel:**
+* Load kernel, initrd and command line according to CONFIG.TXT.
+* The target is an ELF file, KRaBs do the ELF relocation.
 
 ## Structure and Overview
 1. stage1  
-A 446 byte program written to the boot sector. The segment
-registers(CS, DS, ES, SS) are set to `0x07C0`, and the stack pointer (ESP) is
-initialized to `0xFFF0`. After that, stage2 is loaded to address
-`0x07C0:0x0200`, and jumps to address `0x07C0:0x0280`. In the latter half of
-stage1, there is an area for storing the sector length (in units of 512 bytes)
-of the stage2 program.
+A 446 byte program written to the boot sector. The segment registers(CS, DS, ES, SS) are set to `0x07C0`, and the stack pointer (ESP) is initialized to `0xFFF0`. After that, stage2 is loaded to address `0x07C0:0x0200`, and jumps to address `0x07C0:0x0206`. In the latter half of stage1, there is an area for storing the sector position and length (in units of 512 bytes) of the stage2 program.
 2. stage2  
-The stage3 program is loaded at address `0x07C0:0x6000`, the compressed kernel
-image is loaded at address `0x0350_0000` in the extended memory area, and the
-initrd file is loaded at `0x0560_0000`. The file is read from the disk using a
-4K byte track buffer from address `0x07C0:0xEE00`, and further transferred to an
-appropriate address using `INT 15h` BIOS Function `0x87h`. When the loading of
-stage3, initrd and compressed kernel image is completed, jump to address
-`0x07C0:0x6000`.
-The kernel command line is held in the area of 120 bytes from address `0x200`.
-3. stage3 + stage4  
-Stage3 + Stage4 is linked with the libbzip2 decompression routine. Since an
-external C library is used, it is necessary to support zero clear of the .bss
-section. After a series of hardware and software initialization, empty_zero_page
-information is prepared in `0x07C0:0x0000` to `0x07C0:0x0FFF` together with the
-information written in stage2. Enable the A20 line, change the address bus to 32
-bits, and shift to the protect mode. The decompression function is called, the
-bzip2 compressed ELF kernel image is restored to the extended memory address
-`0x100000` or later, and then the ELF32/ELF64 file is parsed and loaded. If the
-target is ELF64, set the 4G boot pagetable and transition to long mode. Finally,
-jump to the entry point to launch the kernel. At this time, it is necessary to
-put the physical address (`0x00007C00`) of the empty_zero_page information
-prepared in the low-order memory into the ESI or RSI register.
-4. plankton🦠  
+Load stage3 and stage4, then jump to stage3. The stage3 program is loaded at address `0x07C0:0x6000`, the stage4 is loaded at address `0x0003_0000` in the extended memory area. The file is read from the disk using a 2K byte track buffer from address `0x07C0:0xEE00`, and further transferred to an appropriate address using `INT 15h` BIOS Function `0x87h`. A mechanism similar to this function is used in stage 4. When the loading of stage3 and stage4 is completed, jump to address `0x07C0:0x6000`. 
+3. stage3  
+Do hardware and software initialization which need BIOS calls. After a series of initialization, empty_zero_page information is prepared in `0x07C0:0x0000` to `0x07C0:0x0FFF`. Enable the A20 line, change the address bus to 32 bits, and shift to the protect mode. Then, jump to the Stage4.
+4. stage4  
+Mount the FAT32 EFI System Partition. Then, read and parse the CONFIG.TXT on that partition. Load ELF kernel image, initrd, and kernel command line according to CONFIG.TXT. Drop to real mode when executing I/O. Set Command line and image informations in empty_zero_page. ELF kernel image is stored to the extended memory address `0x100000` or later, and then the ELF32/ELF64 file is parsed and loaded. If the target is ELF64, set the 4G boot pagetable and transition to long mode. Finally, jump to the entry point to launch the kernel. At this time, put the physical address (`0x00007C00`) of the empty_zero_page information prepared in the low-order memory into the `ESI` or `RSI` register.
+
+5. plankton🦠  
 library common to stage1 ~ stage4.
-
-## Disk Space Layout
-bootflaged partition is needed. Set boot flag on 1st partition:
-
-![layout](images/layout.png)
