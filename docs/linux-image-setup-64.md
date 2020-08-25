@@ -40,6 +40,14 @@ This example needs to be run on Linux.
    File systems ---> The Extended 4 (ext4) filesystem ---> yes
    File systems ---> Pseudo filesystems ---> /proc file system support ---> yes
    File systems ---> Pseudo filesystems ---> sysfs file system support ---> yes
+   File systems ---> DOS/FAT/EXFAT/NT Filesystems  ---> VFAT (Windows-95) fs support ---> yes
+   File systems ---> DOS/FAT/EXFAT/NT Filesystems  ---> Enable FAT UTF-8 option by default ---> yes
+   File systems ---> Native language support  ---> Codepage 437 (United States, Canada) ---> yes
+   File systems ---> Native language support  ---> Codepage 437 (United States, Canada) ---> yes
+   File systems ---> Native language support  ---> ASCII (United States) ---> yes
+   File systems ---> Native language support  ---> NLS ISO 8859-1  (Latin 1; Western European Languages) ---> yes
+   File systems ---> Native language support  ---> NLS UTF-8 ---> yes
+   File systems ---> UTF-8 normalization and casefolding support --- yes
    ```
    Or Copy the [my recommended config](../resources/.config) to `.config`, then
    do the menuconfig for adjustments:
