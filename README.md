@@ -7,7 +7,7 @@ KRaBs is working on booting vmlinux and other kernels formatted in ELF on 32-bit
 Other features:
 * Supports GPT and FAT32 File System on EFI System Partition(ESP).
 * You can configure KRaBs's boot option by CONFIG.TXT on FAT32.
-* CONFIG.TXT is a simple matrix-oriented text file. See [CONFIG.TXT formats](#config.txt-formats).
+* CONFIG.TXT is a simple matrix-oriented text file. See [CONFIG.TXT formats](#configtxt-format).
 
 ## News
 * 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**. see [details](docs/linux-image-setup-64.md)
