@@ -1,15 +1,14 @@
-[workspace]
-members = [
-    "src/stage_1st",
-    "src/stage_2nd",
-    "src/stage_3rd",
-    "src/stage_4th",
-    "src/plankton",
-]
-exclude = [
-    "resources/eg-kernel",
-    "resources/eg-kernel64"
-]
+[package]
+name = "krabs"
+version = "0.1.0"
+authors = ["Hayato Ohhashi <o8@vmm.dev>"]
+edition = "2018"
 
-[profile.release]
-opt-level = "z"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3.15"
+gpt = "1.0.0"
+
+[build-dependencies]
+llvm-tools = "0.1.1"
