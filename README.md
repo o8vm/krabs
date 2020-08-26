@@ -11,6 +11,9 @@ Other features:
 
 ## News
 * 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also work fine!!**. see [details](docs/linux-image-setup-64.md)
+   ```
+   cargo run -- -we disk.img
+   ```
 
 ![sample](./docs/images/demo3.gif)
 
