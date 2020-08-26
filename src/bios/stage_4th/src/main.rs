@@ -17,7 +17,7 @@ use stage_4th::{
 #[no_mangle]
 fn stage4() -> ! {
     clear_bss();
-    println!("Stage4: ");
+    println!("STG4: ");
     let file_name = "CONFIG.TXT";
 
     // Mount FileSystem.

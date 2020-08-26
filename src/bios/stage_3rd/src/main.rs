@@ -11,7 +11,7 @@ pub mod rfn;
 #[link_section = ".first"]
 #[no_mangle]
 fn stage3() -> ! {
-    println!("Stage3:");
+    println!("STG3:");
     println!("  Initializing system.");
     init::setup();
     println!("  Moving to protected mode.");

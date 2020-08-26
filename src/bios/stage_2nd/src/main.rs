@@ -27,7 +27,7 @@ fn stage2() {
     let ptr = STAGE3_START as *const ();
     let stage3: fn() -> ! = unsafe { core::mem::transmute(ptr) };
 
-    print!("\r\nStage2: ");
+    print!("\r\nSTG2: ");
     println!(
         "stage3_size = {:04X} : \
               stage4_size = {:04X}",
