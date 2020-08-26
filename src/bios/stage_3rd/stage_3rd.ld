@@ -7,12 +7,12 @@ SECTIONS {
     .param  : { KEEP(*(.param)) }
     . = 0x6110;
     .second : { KEEP(*(.second)) }
-    .text   : { *(.text)   }
-    .rodata : { *(.rodata) }
-    .data   : { *(.data)   }
+    .text   : { *(.text*)   }
+    .rodata : { *(.rodata*) }
+    .data   : { *(.data*)   }
     .bss    : { 
         _data_end = .; 
-        *(.bss) 
+        *(.bss*) 
         _bss_end = .;
     }
     /DISCARD/ : { *(.eh_frame*) }

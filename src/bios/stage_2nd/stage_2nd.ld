@@ -3,9 +3,9 @@ EXTERN(PARAM);
 SECTIONS {
     . = 0x200;
     .table  :   { KEEP(*(.table)) } 
-    .text   :   { *(.startup) *(.text) }
+    .text   :   { *(.startup) *(.text*) }
     .rodata :   { *(.rodata*) }
-    .data   :   { *(.data) }
-    .bss    :   { *(.bss) }
+    .data   :   { *(.data*) }
+    .bss    :   { *(.bss*) }
     /DISCARD/ : { *(.eh_frame*) }
 }
