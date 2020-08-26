@@ -16,7 +16,7 @@ entry!(main);
 fn main() {
     let ptr = STAGE2_START as *const ();
     let stage2: fn() = unsafe { core::mem::transmute(ptr) };
-    inform(b"Stage1: ");
+    inform(b"STG1: ");
     match Dap::hd_reset(0x80) {
         Err(err) => {
             inform(err);
@@ -36,7 +36,7 @@ fn main() {
                 inform(err);
                 return;
             }
-            Ok(_) => inform(b"Ok"),
+            Ok(_) => inform(b"O"),
         }
     }
     stage2();

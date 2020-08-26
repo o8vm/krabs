@@ -13,7 +13,7 @@ pub struct Dap {
 }
 
 impl Dap {
-    const DISK_ERR: &'static [u8] = b"I/O error";
+    const DISK_ERR: &'static [u8] = b"X";
     pub fn new(sectors: u16, buffer: u32, startlba: u64) -> Self {
         Dap {
             size: 0x10,
