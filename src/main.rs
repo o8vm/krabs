@@ -203,7 +203,7 @@ fn write_into_disk(
             writer.write_all(&[byte])?;
         }
         total_sector_size += stage2_ssize;
-        println!("  done. start = {}", bbp.0 * 512);
+        println!("  done");
     }
 
     // write stage_3rd into disk, if it exists
