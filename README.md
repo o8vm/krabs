@@ -6,30 +6,28 @@ KRaBs is working on booting vmlinux and other kernels formatted in ELF on 32-bit
 
 Other features:
 * Supports GPT and FAT32 File System on EFI System Partition(ESP).
-* You can configure KRaBs's boot option by CONFIG.TXT on FAT32.
+* You can configure KRaBs's boot option in CONFIG.TXT on FAT32 ESP.
 * CONFIG.TXT is a simple matrix-oriented text file. See [CONFIG.TXT formats](#configtxt-format).
 
 ## News
-* 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also works fine!!**. see [details](docs/linux-image-setup-64.md)
+* 2020/08: **Currently, KRaBs can boot kernel-5.8.3! initrd and kernel command line also work fine!!**. see [details](docs/linux-image-setup-64.md)
 
-![sample](./docs/images/2020demo.gif)
+![sample](./docs/images/demo3.gif)
 
 ## Getting Started
 To get started with KRaBs, build it from source.
 
 ### Requirements
-1. Needs a nightly Rust compiler.  
-2. If using 64-bit Linux, 32-bit multilib environment is needed.
-3. Needs GPTed disk image that has BIOS Boot Partition and EFI System Partition.
-4. Needs CONFIG.TXT, kernel image and initrd in FAT32 FileSystem on EFI System Partition.
-5. llvm-objcopy. please install it before build.
+1. `rust-src` and `llvm-tools-preview`
+2. GPTed disk image that has BIOS Boot Partition and EFI System Partition.
+3. CONFIG.TXT, kernel image and initrd on FAT32 FileSystem on EFI System Partition.
+4. (option) qemu-system-x86
 
-#### Prepare 32-bit multilib environment:
+#### Prepare `rust-src` and `llvm-tools-preview`
 ```shell
-RHEL/CentOS:
-$ sudo yum install -y glibc.i686 glibc-devel.i686 libgcc.i686
-Ubuntu:
-$ sudo apt install gcc-multilib -y
+$ cd /path/to/krabs
+$ rustup component add rust-src
+$ rustup component add llvm-tools-preview
 ```
 
 #### Example of GPT disk image:
@@ -71,24 +69,16 @@ main.cmdlin clocksource=tsc net.ifnames=0
 ```
 
 ### Build
-You can build KRaBs as follows:
-
 ```shell
-cd /path/to/krabs
 cargo build
 ```
 
-### Write
-Write out to the disk:
-
+### Burn
 ```shell
 cargo run -- -w disk.img
 ```
 
-### Run
-First, install qemu-system-x86.  
-Then, you can test it using QEMU:  
-
+### Test
 ```shell
 cargo run -- -e disk.img
 ```
