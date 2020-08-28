@@ -43,9 +43,7 @@ fn stage4() -> ! {
 
     // Relocating ELF formatted Kernel
     print!("  Relocating kernel ");
-    let entry_addr = load_elf(kernel_size)
-        .map_err(|err| err.stringify())
-        .unwrap();
+    let entry_addr = load_elf(kernel_size).unwrap();
 
     // Excute
     match entry_addr {
