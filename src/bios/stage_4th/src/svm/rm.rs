@@ -76,23 +76,22 @@ pub fn diskread(start_lba: u32, sectors: u32) -> Result<(), BIOError> {
     // save start_lba and sectors
     param[1] = sectors;
     param[0] = start_lba;
-
+//loop {}
     unsafe {
         scratch_push!();
         preserved_push!();
-
+        
+        llvm_asm!("cli");
         // save stack and return address
         llvm_asm!("movl %esp, %eax":"={eax}"(param[3]));
         llvm_asm!("movl $$continue, %eax":"={eax}"(param[2]));
-
         // set up new stack for real mode 0x07C0:0xFFF0
         llvm_asm!("
-            movl $$0x17bf0, %eax
+            movl $$0xFFF0, %eax
             movl %eax, %esp
             movl %eax, %ebp"
          :::"eax"
         );
-
         // setup gdt
         llvm_asm!("
             movl  $$GDT16, %eax
@@ -112,12 +111,13 @@ pub fn diskread(start_lba: u32, sectors: u32) -> Result<(), BIOError> {
             movw  %ax, %gs
             movw  %ax, %ss"
         );
-        // jmp to a 16bit segment
-        llvm_asm!("ljmp  $$0x10, $$0xDD10");
+        llvm_asm!("jmp  $$0x10, $$0xDD10");
         llvm_asm!("continue:");
+        llvm_asm!("sti");
         preserved_pop!();
         scratch_pop!();
     }
+    //loop {}
     if param[0] == 1 {
         Ok(())
     } else {

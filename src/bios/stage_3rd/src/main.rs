@@ -17,5 +17,5 @@ fn stage3() -> ! {
     println!("  Moving to protected mode.");
 
     init::cur::set_cur();
-    mpm::move_to_protect(STAGE4_START, PROT_STACK);
+    mpm::move_to_protect(STAGE4_START, PROT_STACK)
 }

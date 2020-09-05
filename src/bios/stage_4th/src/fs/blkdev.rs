@@ -3,6 +3,7 @@ use plankton::{
     layout::{INIT_SEG, TRACK_BUFFER},
     mem::MemoryRegion,
 };
+use crate::{print, println};
 
 pub trait BlockDevice {
     type Error;
@@ -35,7 +36,10 @@ pub fn copy_bytes(
         avail_bytes
     };
     let slice = track_buffer.as_slice::<u8>(sector_offset as u64, n_bytes as u64);
-    buf[buff_offset..buff_offset + n_bytes].clone_from_slice(&slice);
+    let cop = alloc::vec![0u8; n_bytes];
+    buf[buff_offset..(buff_offset + n_bytes)].copy_from_slice(&slice);
+    println!("slice = {:?}", slice);
+    println!("buf = {:?}", buf);
     n_bytes
 }
 
@@ -57,6 +61,7 @@ pub fn read(buf: &mut [u8], offset: usize) -> Result<(), BIOError> {
             start_lba as u32 + (i as u32 * MAX_SECTOR as u32),
             load_sectors,
         )?;
+        
         buff_offset += copy_bytes(buf, load_sectors as usize * 512, buff_offset, sector_offset);
         num_sectors -= load_sectors as usize;
     }

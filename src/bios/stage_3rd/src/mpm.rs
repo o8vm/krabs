@@ -1,4 +1,5 @@
 use plankton::ios::{io_delay, outb};
+use plankton::{print, println};
 
 #[repr(C, packed)]
 struct DescoritorTable {
@@ -44,7 +45,7 @@ fn reset_coprocessor() {
     io_delay();
 }
 
-fn setup_gdt() {
+pub fn setup_gdt() {
     unsafe {
         llvm_asm!("xorl  %eax, %eax
               movw  %ds, %ax
@@ -57,7 +58,7 @@ fn setup_gdt() {
     }
 }
 
-fn setup_idt() {
+pub fn setup_idt() {
     unsafe {
         llvm_asm!("lidt IDTR":::);
     }
@@ -65,21 +66,26 @@ fn setup_idt() {
 
 fn protected_mode_jump(entry_addr: u32, prot_stack: u32) -> ! {
     unsafe {
-        llvm_asm!("movl  %eax, %esp
-              movl %eax, %ebp"
-            ::"{eax}"(prot_stack):);
-        llvm_asm!("movl  %cr0, %eax
-              orl   $$1, %eax
-              movl  %eax, %cr0
-              jmp   flushing
-             flushing:
-              movl  %ebx, (jmp_offset)
-              movw  $$0x18, %ax
-              movw  %ax, %ds
-              movw  %ax, %es
-              movw  %ax, %fs
-              movw  %ax, %gs
-              movw  %ax, %ss"
+        llvm_asm!("
+            movl  %eax, %esp
+            movl %eax, %ebp"
+         :
+         :"{eax}"(prot_stack)
+         :
+        );
+        llvm_asm!("
+            movl  %cr0, %eax
+            orl   $$1, %eax
+            movl  %eax, %cr0
+            jmp   flushing
+         flushing:
+            movl  %ebx, (jmp_offset)
+            movw  $$0x18, %ax
+            movw  %ax, %ds
+            movw  %ax, %es
+            movw  %ax, %fs
+            movw  %ax, %gs
+            movw  %ax, %ss"
          :
          : "{ebx}"(entry_addr)
          : "eax"
@@ -93,3 +99,4 @@ fn protected_mode_jump(entry_addr: u32, prot_stack: u32) -> ! {
     }
     loop {}
 }
+
