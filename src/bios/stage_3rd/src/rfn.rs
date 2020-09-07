@@ -1,4 +1,4 @@
-use stage_3rd::{init::cur::re_cur, ParamTable};
+use stage_3rd::{init::cur::{re_cur, set_cur}, ParamTable};
 use plankton::dev::read_to_trackbuf;
 use plankton::{print, println};
 
@@ -40,49 +40,51 @@ fn read() -> ! {
         sectors = PARAM.sectors;
     }
     re_cur();
-    //println!("slba = {}, secs = {}", start_lba, sectors);
+    println!("slba = {}, secs = {}", start_lba, sectors);
     match read_to_trackbuf(sectors as u16, start_lba as u64) {
         Ok(_) => unsafe { PARAM.start_lba = true as u32 },
         Err(_) => unsafe { PARAM.start_lba = false as u32 },
     }
+    set_cur();
+
+
 
     // back to protected mode
     unsafe {
         llvm_asm!("cli");
-    }
-    stage_3rd::mpm::setup_gdt();
-    stage_3rd::mpm::setup_idt();
-    unsafe {
+        stage_3rd::mpm::setup_gdt();
+        stage_3rd::mpm::setup_idt();
         llvm_asm!("
-            movl %eax, %esp
-            movl %eax, %ebp"
-        :
-        :"{eax}"(PARAM.prot_stack)
-        :
+            movl %eax, (return_addr)
+            movl %ebx, %esp"
+         :
+         : "{eax}"(PARAM.ret_addr), "{ebx}"(PARAM.prot_stack)
         );
         llvm_asm!("
             movl  %cr0, %eax
-            orl   $$1, %eax
+            orl   $$1,  %eax
             movl  %eax, %cr0"
+         :
+         :
+         :"eax"
         );
         llvm_asm!("
-            jmp   flushing2
-         flushing2:
-            movl  %ebx, (jmp_offset2)
+            jmp   flush
+         flush:
             movw  %ax, %ds
             movw  %ax, %es
             movw  %ax, %fs
             movw  %ax, %gs
             movw  %ax, %ss"
          :
-         : "{eax}"(0x18)"{ebx}"(PARAM.ret_addr)
-         :
+         : "{eax}"(0x18)
         );
         
-        llvm_asm!(".byte 0x66
-              .byte 0xEA
-             jmp_offset2:   .long 0
-              .word 0x10"
+        llvm_asm!("
+            .byte 0x66
+            .byte 0xEA
+         return_addr:   .long 0
+            .word 0x10"
          :::
         );
     }

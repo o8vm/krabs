@@ -67,33 +67,37 @@ pub fn setup_idt() {
 fn protected_mode_jump(entry_addr: u32, prot_stack: u32) -> ! {
     unsafe {
         llvm_asm!("
-            movl  %eax, %esp
-            movl %eax, %ebp"
+            movl %eax, (jmp_offset)
+            movl %ebx, %esp
+            movl %ebx, %ebp"
          :
-         :"{eax}"(prot_stack)
+         :"{eax}"(entry_addr), "{ebx}"(prot_stack)
          :
         );
         llvm_asm!("
             movl  %cr0, %eax
             orl   $$1, %eax
-            movl  %eax, %cr0
+            movl  %eax, %cr0"
+         :
+         :
+         : "eax"
+        );
+        llvm_asm!("
             jmp   flushing
          flushing:
-            movl  %ebx, (jmp_offset)
-            movw  $$0x18, %ax
             movw  %ax, %ds
             movw  %ax, %es
             movw  %ax, %fs
             movw  %ax, %gs
             movw  %ax, %ss"
          :
-         : "{ebx}"(entry_addr)
-         : "eax"
+         : "{eax}"(0x18)
         );
-        llvm_asm!(".byte 0x66
-              .byte 0xEA
-             jmp_offset:   .long 0
-              .word 0x10"
+        llvm_asm!("
+            .byte 0x66
+            .byte 0xEA
+         jmp_offset:   .long 0
+            .word 0x10"
          :::
         );
     }
