@@ -1,6 +1,6 @@
 use stage_3rd::{init::cur::{re_cur, set_cur}, ParamTable};
 use plankton::dev::read_to_trackbuf;
-use plankton::{print, println};
+//use plankton::{print, println};
 
 
 #[link_section = ".param"]
@@ -40,7 +40,7 @@ fn read() -> ! {
         sectors = PARAM.sectors;
     }
     re_cur();
-    println!("slba = {}, secs = {}", start_lba, sectors);
+    //println!("slba = {}, secs = {}", start_lba, sectors);
     match read_to_trackbuf(sectors as u16, start_lba as u64) {
         Ok(_) => unsafe { PARAM.start_lba = true as u32 },
         Err(_) => unsafe { PARAM.start_lba = false as u32 },
