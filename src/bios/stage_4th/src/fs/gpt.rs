@@ -77,6 +77,8 @@ impl BlockDevice for Partition {
         let load_sectors = (buf.len() + offset + 512 - 1) / 512;    // sectors
         let real_offset = (self.start_lba as usize * 512) + offset; // bytes
         if load_sectors <= self.length {
+            //println!("offset = {}", offset);
+            //println!("load sectors = {}, length = {}", load_sectors, self.length);
             read(buf, real_offset)?;
             Ok(())
         } else {

@@ -33,11 +33,13 @@ fn stage4() -> ! {
     // Read CONFIG File
     print!("  Reading {}...", file_name);
     let config_txt = root.open_file(file_name).unwrap();
+    //loop {}
+    //println!("{}", config_txt.len());
     let mut buf = vec![0u8; config_txt.len()];
     config_txt.read(&mut buf).unwrap();
     let config = Config::new(core::str::from_utf8(&buf).unwrap()).unwrap();
     println!(" done!");
-
+    //loop {}
     // Load items
     let kernel_size = load_items(root, config).unwrap();
 

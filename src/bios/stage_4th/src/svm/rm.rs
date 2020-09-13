@@ -69,42 +69,43 @@ static GDTR16: Descriptortable = Descriptortable {
     base: 0,
 };
 
+#[inline(never)]
 #[no_mangle]
 pub fn diskread(start_lba: u32, sectors: u32) -> Result<(), BIOError> {
     let mut param_region = MemoryRegion::new(((INIT_SEG << 4) + 0x6100) as u64, 16);
     let param = param_region.as_mut_slice::<u32>(0, 4);
     // save start_lba and sectors
-    param[1] = sectors;
     param[0] = start_lba;
-
+    param[1] = sectors;
+//loop {}
     unsafe {
+        llvm_asm!("start:");
         scratch_push!();
         preserved_push!();
+        
+        llvm_asm!("cli");
 
-        // save stack and return address
-        llvm_asm!("movl %esp, %eax":"={eax}"(param[3]));
+        // save return address and stack pointer
         llvm_asm!("movl $$continue, %eax":"={eax}"(param[2]));
-
+        llvm_asm!("movl %esp, %eax":"={eax}"(param[3]));
+        
+        // setup gdt & idt
+        llvm_asm!("
+            movl  $$GDT16, %eax
+            movl  %eax, (GDTR16+2)
+            lgdt  GDTR16
+            lidt IDTR16"
+         :::
+        );
         // set up new stack for real mode 0x07C0:0xFFF0
         llvm_asm!("
-            movl $$0x17bf0, %eax
+            movl $$0xFFF0, %eax
             movl %eax, %esp
             movl %eax, %ebp"
          :::"eax"
         );
-
-        // setup gdt
-        llvm_asm!("
-            movl  $$GDT16, %eax
-            movl  %eax, (GDTR16+2)
-            lgdt  GDTR16"
-         :::
-        );
-        // setup idt
-        llvm_asm!("lidt IDTR16":::);
         // setup segment
-        llvm_asm!(
-            "
+        llvm_asm!("
             movw  $$0x18, %ax
             movw  %ax, %ds
             movw  %ax, %es
@@ -112,12 +113,20 @@ pub fn diskread(start_lba: u32, sectors: u32) -> Result<(), BIOError> {
             movw  %ax, %gs
             movw  %ax, %ss"
         );
-        // jmp to a 16bit segment
-        llvm_asm!("ljmp  $$0x10, $$0xDD10");
-        llvm_asm!("continue:");
+
+        // goto real mode
+        llvm_asm!("jmp  $$0x10, $$0xDD10");
+
+        // return point
+        llvm_asm!("
+          continue:
+            sti"
+        );
         preserved_pop!();
         scratch_pop!();
+        llvm_asm!("end:")
     }
+    //loop {}
     if param[0] == 1 {
         Ok(())
     } else {
