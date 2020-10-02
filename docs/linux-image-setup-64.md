@@ -165,7 +165,7 @@ busybox:
 ## Set FAT32 EFI System Partition
 1. Copy vmlinux and initrd into EFI System Partition
    ```shell
-   $ sudo /dev/mapper/loop0p2 /mnt
+   $ sudo mount /dev/mapper/loop0p2 /mnt
    $ sudo cp path/to/vmlinux-5.8.3 /mnt/
    $ sudo cp path/to/initramfs.cpio.gz /mnt/
    ```
