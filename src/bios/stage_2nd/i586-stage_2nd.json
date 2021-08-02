@@ -15,7 +15,6 @@
     "relocation-model": "static",
     "position-independent-executables": false,
     "relro-level": "off",
-    "stack-probes": true,
     "target-c-int-width": "32",
     "target-endian": "little",
     "target-pointer-width": "32",

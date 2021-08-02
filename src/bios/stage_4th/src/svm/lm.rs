@@ -1,3 +1,5 @@
+use core::hint::unreachable_unchecked;
+
 #[repr(C, packed)]
 struct DescoritorTable {
     limit: u16,
@@ -96,8 +98,8 @@ fn jmp64(entry_addr: u64) -> ! {
          : "{eax}"(entry_addr), "{ebx}"((1<<31)|(1<<0)) "{esi}"(0x7C00)
          :
         );
+        unreachable_unchecked();
     }
-    loop {}
 }
 
 pub fn start_kernel(entry_addr: u64) -> ! {

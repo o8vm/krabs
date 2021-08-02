@@ -1,5 +1,6 @@
 use stage_3rd::{init::cur::{re_cur, set_cur}, ParamTable};
 use plankton::dev::read_to_trackbuf;
+use core::hint::unreachable_unchecked;
 //use plankton::{print, println};
 
 
@@ -87,6 +88,6 @@ fn read() -> ! {
             .word 0x10"
          :::
         );
+        unreachable_unchecked();
     }
-    loop {}
 }

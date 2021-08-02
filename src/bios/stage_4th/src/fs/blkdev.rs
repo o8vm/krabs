@@ -3,7 +3,7 @@ use plankton::{
     layout::{INIT_SEG, TRACK_BUFFER},
     mem::MemoryRegion,
 };
-//use crate::{print, println};
+use crate::{print, println};
 
 pub trait BlockDevice {
     type Error;
@@ -37,11 +37,14 @@ pub fn copy_bytes(
     } else {
         avail_bytes
     };
-    //println!("sector_offset = {}, n_bytes = {}, buffer_offset = {}", sector_offset, n_bytes, buff_offset);
+    println!("sector_offset = {}, n_bytes = {}, buffer_offset = {}", sector_offset, n_bytes, buff_offset);
     let slice = track_buffer.as_slice::<u8>(sector_offset as u64, n_bytes as u64);
-    buf[buff_offset..(buff_offset + n_bytes)].copy_from_slice(&slice);
-    //println!("slice = {:?}", slice);
-    //println!("buf = {:?}", buf);
+    unsafe {
+        core::ptr::copy_nonoverlapping(slice.as_ptr(), buf[buff_offset..(buff_offset + n_bytes)].as_mut_ptr(), slice.len());
+    }
+    //buf[buff_offset..(buff_offset + n_bytes)].clone_from_slice(&slice);
+    println!("slice = {:?}", slice);
+    println!("buf = {:?}", buf);
     n_bytes
 }
 

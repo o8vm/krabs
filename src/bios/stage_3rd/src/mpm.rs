@@ -1,3 +1,4 @@
+use core::hint::unreachable_unchecked;
 use plankton::ios::{io_delay, outb};
 use plankton::{print, println};
 
@@ -100,7 +101,7 @@ fn protected_mode_jump(entry_addr: u32, prot_stack: u32) -> ! {
             .word 0x10"
          :::
         );
+        unreachable_unchecked();
     }
-    loop {}
 }
 

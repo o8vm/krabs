@@ -18,7 +18,7 @@ use stage_4th::{
 fn stage4() -> ! {
     clear_bss();
     println!("STG4: ");
-    let file_name = "CONFIG.TXT";
+    let file_name = "config.txt";
 
     // Mount FileSystem.
     print!("  Mounting FAT32 EFI System Partition...");

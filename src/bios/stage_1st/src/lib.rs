@@ -2,6 +2,9 @@
 #![no_std]
 
 use core::panic::PanicInfo;
+use core::hint::unreachable_unchecked;
+
+
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
@@ -39,6 +42,6 @@ fn _start() -> ! {
          :::
         );
         main();
+        unreachable_unchecked();
     }
-    loop {}
 }
